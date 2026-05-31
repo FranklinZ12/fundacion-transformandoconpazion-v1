@@ -1,26 +1,150 @@
 @import "tailwindcss";
-
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@plugin "daisyui";
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-brand-red: #c3171c;
+  --color-brand-purple: #872075;
+  --color-background: #f9fafb;
+  --color-foreground: #111827;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+:root {
+  --brand-red: #c3171c;
+  --brand-purple: #872075;
+}
+
+html {
+  overflow-x: hidden;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  overflow-x: hidden;
+  background-color: #f9fafb;
+  color: #111827;
+  font-family: var(--font-inter), system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Reset DaisyUI v5 semantic element margins */
+section,
+article,
+aside,
+figure,
+figcaption {
+  margin: 0 !important;
+}
+
+/* Remove DaisyUI border on header */
+header {
+  border: none !important;
+}
+
+/* Wave hero shape */
+.wave {
+  margin-top: 0;
+  top: 0;
+  left: 0;
+  width: 100%;
+  overflow: hidden;
+  line-height: 0;
+  transform: rotate(180deg);
+}
+
+.wave svg {
+  display: block;
+  width: calc(113% + 1.3px);
+  height: 197px;
+  transform: rotateY(180deg);
+}
+
+.wave .shape-fill {
+  fill: #872075;
+}
+
+@media (max-width: 767px) {
+  .wave svg {
+    width: calc(100% + 1.3px);
+    height: 133px;
+  }
+}
+
+/* Curved process header */
+.curved-bg {
+  width: 100%;
+  height: 12rem;
+  margin-top: 0;
+}
+
+.curved-bg__inner {
+  background-color: var(--brand-purple);
+  border-bottom-left-radius: 50% 40%;
+  border-bottom-right-radius: 50% 40%;
+  height: 50%;
+  width: 100%;
+}
+
+/* Navbar */
+.navbar-fixed {
+  position: fixed;
+  z-index: 50;
+  top: 0;
+  width: 100%;
+  background: white;
+  box-shadow: 0 2px 12px -2px rgba(0, 0, 0, 0.12);
+}
+
+/* About cards */
+.card-about {
+  display: flex;
+  flex: 1 1 0%;
+  align-items: flex-start;
+  padding: 1.25rem;
+  border-radius: 0.75rem;
+  background: white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.card-about:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(135, 32, 117, 0.12);
+}
+
+/* Typography helpers */
+.title-descripcion {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3em;
+  line-height: 1.8;
+  color: #1f2937;
+  margin-bottom: 1.5rem;
+}
+
+/* Error messages in forms */
+.error-message {
+  display: block;
+  color: #ed3c0d;
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-top: 0.25rem;
+  text-align: left;
+}
+
+/* Section layout */
+section {
+  margin-left: 2.5rem;
+  margin-right: 2.5rem;
+  margin-top: 3rem;
+  margin-bottom: 3rem;
+}
+
+@media (min-width: 768px) {
+  section {
+    margin-left: 7rem;
+    margin-right: 7rem;
+  }
 }

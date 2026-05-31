@@ -46,6 +46,7 @@ export default function AgaProductionsContent() {
             src="/images/procesos/AGA.webp"
             alt="Logo A.G.A. Productions"
             fill
+            sizes="144px"
             className="object-contain"
             priority
           />
@@ -97,6 +98,7 @@ export default function AgaProductionsContent() {
                     src={s.image}
                     alt={s.titulo}
                     fill
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                     className="object-contain p-4"
                     loading="lazy"
                   />
@@ -107,6 +109,7 @@ export default function AgaProductionsContent() {
                     src={s.image}
                     alt={s.titulo}
                     fill
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                     className="object-cover"
                     loading="lazy"
                   />

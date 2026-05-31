@@ -46,6 +46,7 @@ export default function CronicasContent() {
             src="/images/procesos/CyP_Deportiva.webp"
             alt="Logo Crónicas y Pasión Deportiva"
             fill
+            sizes="160px"
             className="object-contain"
             priority
           />
@@ -99,6 +100,7 @@ export default function CronicasContent() {
                   src={s.image}
                   alt={s.titulo}
                   fill
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                   className="object-contain p-4"
                   loading="lazy"
                 />

@@ -58,6 +58,7 @@ export default function TCPlayContent() {
             src="/images/procesos/TCPlay.webp"
             alt="Logo TC Play"
             fill
+            sizes="144px"
             className="object-contain p-2"
             priority
           />

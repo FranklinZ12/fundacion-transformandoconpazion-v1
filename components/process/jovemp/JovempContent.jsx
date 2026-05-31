@@ -44,6 +44,7 @@ export default function JovempContent() {
             src="/images/procesos/Jovemp.webp"
             alt="Logo Jovemp"
             fill
+            sizes="144px"
             className="object-contain"
             priority
           />
@@ -96,6 +97,7 @@ export default function JovempContent() {
                   src={s.image}
                   alt={s.titulo}
                   fill
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                   className="object-cover"
                   loading="lazy"
                 />

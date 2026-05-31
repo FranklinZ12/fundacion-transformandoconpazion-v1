@@ -45,6 +45,7 @@ export default function NaturalWomanContent() {
             src="/images/procesos/naturalWoman/woman3.webp"
             alt="Natural Woman — sesión fotográfica grupal"
             fill
+            sizes="(max-width: 1024px) 100vw, 50vw"
             className="object-cover"
             priority
           />
@@ -57,6 +58,7 @@ export default function NaturalWomanContent() {
                 src="/images/procesos/NaturalWoman.webp"
                 alt="Logo Natural Woman"
                 fill
+                sizes="48px"
                 className="object-cover"
               />
             </div>
@@ -130,6 +132,7 @@ export default function NaturalWomanContent() {
                     src={s.image}
                     alt={s.titulo}
                     fill
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                     className="object-cover"
                     loading="lazy"
                   />
@@ -141,6 +144,7 @@ export default function NaturalWomanContent() {
                     src={s.image}
                     alt={s.titulo}
                     fill
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                     className="object-contain p-6"
                     loading="lazy"
                   />

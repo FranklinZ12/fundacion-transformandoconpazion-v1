@@ -28,6 +28,19 @@ const nextConfig = {
       },
     ];
   },
+
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '9f1e8b6678.cbaul-cdnwnd.com',
+      },
+      {
+        protocol: 'https',
+        hostname: '7b43b669ac.cbaul-cdnwnd.com',
+      },
+    ],
+  },
 };
 
 export default nextConfig;

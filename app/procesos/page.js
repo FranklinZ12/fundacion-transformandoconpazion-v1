@@ -10,8 +10,8 @@ export const metadata = {
 export default function ProcesosPage() {
   return (
     <>
-      <ProcessHero titulo="Proyectos y" titulo2="Procesos" subtitulo="2019–2024" />
-      <div className="mx-4 sm:mx-10 md:mx-20 my-12 flex justify-center">
+      <ProcessHero titulo="Proyectos y" titulo2="Procesos" subtitulo={`2019\u2013${new Date().getFullYear()}`} />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
         <ProcessGrid />
       </div>
     </>

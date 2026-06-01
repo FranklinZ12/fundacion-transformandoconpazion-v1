@@ -1,3 +1,4 @@
+import { getContent } from "@/lib/content";
 import WaveHeader from "@/components/ui/WaveHeader";
 import TeamGrid from "@/components/about/team/TeamGrid";
 
@@ -6,7 +7,8 @@ export const metadata = {
   description: "Conoce el equipo administrativo de la Fundación Transformando Con Pazión.",
 };
 
-export default function AboutTeamPage() {
+export default async function AboutTeamPage() {
+  const { members } = await getContent("equipo");
   return (
     <>
       <WaveHeader title="Nuestro Equipo" subtitle="Las personas que mueven la fundación" />
@@ -17,7 +19,7 @@ export default function AboutTeamPage() {
             su talento, pasión y liderazgo para construir un mejor presente y futuro en la comuna 15.
           </p>
         </div>
-        <TeamGrid />
+        <TeamGrid members={members} />
       </div>
     </>
   );

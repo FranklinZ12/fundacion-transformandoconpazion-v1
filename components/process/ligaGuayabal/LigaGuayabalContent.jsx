@@ -45,7 +45,7 @@ const recursos = [
   },
 ];
 
-export default function LigaGuayabalContent() {
+export default function LigaGuayabalContent({ descripcion }) {
   return (
     <div className="max-w-4xl mx-auto space-y-14 py-4">
 
@@ -72,10 +72,7 @@ export default function LigaGuayabalContent() {
             </h2>
           </div>
           <p className="text-sm text-gray-600 leading-relaxed">
-            La <strong>Liga Guayabal</strong> reúne a más de 16 equipos de la zona en la disciplina
-            de Fútbol de Salón. Se disputa en la <strong>Cancha La Colinita #2</strong> y es uno de
-            los torneos más importantes de la comuna 15, promoviendo la sana convivencia, el deporte
-            y la integración comunitaria.
+            {descripcion ?? (<>La <strong>Liga Guayabal</strong> reúne a más de 16 equipos de la zona en la disciplina de Fútbol de Salón. Se disputa en la <strong>Cancha La Colinita #2</strong> y es uno de los torneos más importantes de la comuna 15, promoviendo la sana convivencia, el deporte y la integración comunitaria.</>)}
           </p>
 
           {/* Stats */}

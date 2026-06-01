@@ -19,7 +19,7 @@ export default function TeamCard({ image, nombre, puesto, bio, instagram, facebo
       {/* Photo */}
       <div className={`relative overflow-hidden bg-gray-100 ${featured ? "aspect-[3/4]" : "aspect-[4/5]"}`}>
         <Image
-          src={`/images/teamImages/${image}.webp`}
+          src={image}
           alt={`Foto de ${nombre}`}
           fill
           sizes={featured ? "(max-width: 640px) 100vw, 400px" : "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"}

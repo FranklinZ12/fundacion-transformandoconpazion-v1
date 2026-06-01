@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { procesosData } from "@/lib/procesos";
+import { procesosData as staticProcesosData } from "@/lib/procesos";
 import ProcessCard from "./ProcessCard";
 
 const CATEGORIES = ["Todos", "Deporte", "Emprendimiento", "Social", "Ambiente", "Cultura"];
@@ -14,12 +14,24 @@ const categoryIcons = {
   Cultura:       "fa-solid fa-microphone",
 };
 
-export default function ProcessGrid() {
+export default function ProcessGrid({ processes }) {
   const [active, setActive] = useState("Todos");
 
+  // Accept CMS processes (array of { card_image, nombre, categoria, card_descripcion, slug })
+  // or fall back to static procesosData
+  const allProcesses = processes
+    ? processes.map((p) => ({
+        image:       p.card_image,
+        nombre:      p.nombre,
+        categoria:   p.categoria,
+        descripcion: p.card_descripcion,
+        link:        p.slug,
+      }))
+    : staticProcesosData;
+
   const filtered = active === "Todos"
-    ? procesosData
-    : procesosData.filter((p) => p.categoria === active);
+    ? allProcesses
+    : allProcesses.filter((p) => p.categoria === active);
 
   return (
     <div className="w-full">
@@ -42,7 +54,7 @@ export default function ProcessGrid() {
             <span className={`text-[11px] font-bold px-1.5 py-0.5 rounded-full ${
               active === cat ? "bg-white/20 text-white" : "bg-gray-100 text-gray-500"
             }`}>
-              {cat === "Todos" ? procesosData.length : procesosData.filter(p => p.categoria === cat).length}
+              {cat === "Todos" ? allProcesses.length : allProcesses.filter(p => p.categoria === cat).length}
             </span>
           </button>
         ))}

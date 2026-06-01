@@ -143,6 +143,13 @@ export default function MobileMenu({ links, pathname }) {
         {/* CTA */}
         <div className="px-4 pb-4 pt-2 border-t border-gray-100">
           <Link
+            href="/admin/login"
+            className="flex items-center justify-center gap-2 w-full rounded-xl border border-[#872075] px-5 py-3 text-sm font-bold text-[#872075] hover:bg-[#872075]/8 transition-all duration-200 mb-2"
+          >
+            <i className="fa-solid fa-circle-user text-sm" aria-hidden="true" />
+            Ingresar
+          </Link>
+          <Link
             href="/contacto"
             className="flex items-center justify-center gap-2 w-full rounded-xl bg-[#872075] px-5 py-3 text-sm font-bold text-white shadow-lg shadow-[#872075]/20 hover:bg-[#6d1960] transition-all duration-200 mb-4"
           >

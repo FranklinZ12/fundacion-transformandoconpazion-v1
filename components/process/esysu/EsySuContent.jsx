@@ -64,7 +64,7 @@ const servicios = [
   },
 ];
 
-export default function EsySuContent() {
+export default function EsySuContent({ descripcion }) {
   return (
     <div className="max-w-4xl mx-auto space-y-14 py-4">
 
@@ -91,9 +91,7 @@ export default function EsySuContent() {
             </h2>
           </div>
           <p className="text-sm text-gray-600 leading-relaxed">
-            <strong>ES&SU</strong> es una microempresa de estampados y sublimación especializada en diseños
-            personalizados que resaltan el amor por el deporte, la cultura urbana y la identidad de cada
-            persona. Trabajamos con materiales de calidad garantizando la satisfacción total.
+            {descripcion ?? (<><strong>ES&SU</strong> es una microempresa de estampados y sublimación especializada en diseños personalizados que resaltan el amor por el deporte, la cultura urbana y la identidad de cada persona. Trabajamos con materiales de calidad garantizando la satisfacción total.</>)}
           </p>
 
           <div className="grid grid-cols-2 gap-3">

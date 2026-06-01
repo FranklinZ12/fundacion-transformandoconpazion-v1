@@ -43,7 +43,7 @@ export default function TeamBioModal({ member, onClose }) {
         {/* Photo header */}
         <div className="relative h-64 bg-gray-100">
           <Image
-            src={`/images/teamImages/${member.image}.webp`}
+            src={member.image}
             alt={`Foto de ${member.nombre}`}
             fill
             className="object-cover object-top"

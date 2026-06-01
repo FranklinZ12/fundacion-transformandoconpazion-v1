@@ -1,7 +1,7 @@
-import { principios } from "@/lib/principios";
+import { principios as defaultPrincipios } from "@/lib/principios";
 import InfoCardList from "../InfoCardList";
 
-export default function PrincipiosSection() {
+export default function PrincipiosSection({ items }) {
   return (
     <section aria-labelledby="principios-heading" className="pt-4 pb-8">
       <div className="text-center mb-6">
@@ -10,7 +10,7 @@ export default function PrincipiosSection() {
         </h2>
         <p className="text-gray-500 mt-2">Los pilares que guían nuestra gestión</p>
       </div>
-      <InfoCardList items={principios} />
+      <InfoCardList items={items ?? defaultPrincipios} />
     </section>
   );
 }

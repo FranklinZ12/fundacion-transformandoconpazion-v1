@@ -31,7 +31,7 @@ const recursos = [
   },
 ];
 
-export default function TorneoBarrialContent() {
+export default function TorneoBarrialContent({ descripcion }) {
   return (
     <div className="max-w-4xl mx-auto space-y-14 py-4">
 
@@ -57,9 +57,7 @@ export default function TorneoBarrialContent() {
             </h2>
           </div>
           <p className="text-sm text-gray-600 leading-relaxed">
-            Nuestro Torneo lleva <strong>4 años trabajando por la sana convivencia</strong> en Guayabal
-            La Colinita como acción social en el territorio. En la disciplina de Fútbol de Salón, muchos
-            buenos deportistas han pasado por el escenario deportivo de la <strong>Cancha La Colinita #2</strong>.
+            {descripcion ?? (<>Nuestro Torneo lleva <strong>4 años trabajando por la sana convivencia</strong> en Guayabal La Colinita como acción social en el territorio. En la disciplina de Fútbol de Salón, muchos buenos deportistas han pasado por el escenario deportivo de la <strong>Cancha La Colinita #2</strong>.</>)}
           </p>
 
           {/* Stats */}

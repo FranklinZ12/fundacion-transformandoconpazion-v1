@@ -52,7 +52,7 @@ const categorias = [
   },
 ];
 
-export default function ClubDeportivoTCPContent() {
+export default function ClubDeportivoTCPContent({ descripcion }) {
   return (
     <div className="max-w-4xl mx-auto space-y-14 py-4">
 
@@ -79,9 +79,7 @@ export default function ClubDeportivoTCPContent() {
             </h2>
           </div>
           <p className="text-sm text-gray-600 leading-relaxed">
-            El <strong>Club Deportivo TCP</strong> desarrolla procesos deportivos en Fútbol de Salón
-            con 5 categorías activas. Más que un club, somos una escuela de vida donde el deporte
-            construye carácter, disciplina y comunidad en la Cancha La Colinita.
+            {descripcion ?? "El Club Deportivo TCP desarrolla procesos deportivos en Fútbol de Salón con 5 categorías activas. Más que un club, somos una escuela de vida donde el deporte construye carácter, disciplina y comunidad en la Cancha La Colinita."}
           </p>
 
           <div className="grid grid-cols-2 gap-3">

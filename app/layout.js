@@ -2,6 +2,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/navbar/Navbar";
 import Footer from "@/components/footer/Footer";
+import PublicShell from "@/components/PublicShell";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -49,11 +50,9 @@ export default function RootLayout({ children }) {
         >
           Saltar al contenido principal
         </a>
-        <Navbar />
-        <main id="main-content" className="flex-1 pt-20">
+        <PublicShell>
           {children}
-        </main>
-        <Footer />
+        </PublicShell>
       </body>
     </html>
   );

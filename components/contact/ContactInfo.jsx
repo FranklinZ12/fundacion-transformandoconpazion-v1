@@ -1,17 +1,21 @@
-export default function ContactInfo() {
+import { getContent } from "@/lib/content";
+
+export default async function ContactInfo() {
+  const c = await getContent("contacto");
+
   const items = [
-    { icon: "fa-solid fa-location-dot", label: "Dirección", text: "Guayabal la Colinita — Medellín\nCra. 53BB #10B Sur - 51" },
-    { icon: "fa-solid fa-clock", label: "Horario de oficina", text: "Lunes - Viernes\n06:00 pm – 10:00 pm" },
-    { icon: "fa-brands fa-whatsapp", label: "WhatsApp", text: "(+57) 314 8229310", href: "https://wa.me/573148229310" },
-    { icon: "fa-solid fa-envelope", label: "Correo", text: "transformandoconpazion@gmail.com", href: "mailto:transformandoconpazion@gmail.com" },
+    { icon: "fa-solid fa-location-dot",  label: "Dirección",          text: c.address },
+    { icon: "fa-solid fa-clock",         label: "Horario de oficina", text: c.schedule },
+    { icon: "fa-brands fa-whatsapp",     label: "WhatsApp",           text: c.whatsapp,  href: c.whatsapp_url },
+    { icon: "fa-solid fa-envelope",      label: "Correo",             text: c.email,     href: `mailto:${c.email}` },
   ];
 
   const socials = [
-    { icon: "fa-brands fa-youtube", label: "YouTube", href: "https://www.youtube.com/@transformandoconpazion" },
-    { icon: "fa-brands fa-twitter", label: "Twitter", href: "https://twitter.com/TransforconPazi" },
-    { icon: "fa-brands fa-instagram", label: "Instagram", href: "https://www.instagram.com/fundacion_tcp/" },
-    { icon: "fa-brands fa-facebook-f", label: "Facebook", href: "https://www.facebook.com/transformando.con.pazionn/" },
-  ];
+    { icon: "fa-brands fa-youtube",    label: "YouTube",    href: c.socials?.youtube },
+    { icon: "fa-brands fa-twitter",    label: "Twitter",    href: c.socials?.twitter },
+    { icon: "fa-brands fa-instagram",  label: "Instagram",  href: c.socials?.instagram },
+    { icon: "fa-brands fa-facebook-f", label: "Facebook",   href: c.socials?.facebook },
+  ].filter((s) => s.href);
 
   return (
     <div className="rounded-3xl bg-gradient-to-br from-[#872075] to-[#4a1040] p-10 text-white shadow-2xl h-full flex flex-col justify-between">

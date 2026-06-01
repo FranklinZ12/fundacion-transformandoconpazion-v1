@@ -152,8 +152,15 @@ export default function Navbar() {
           })}
         </ul>
 
-        {/* Right: CTA + Mobile */}
+        {/* Right: CTA + Login + Mobile */}
         <div className="flex items-center gap-3 flex-shrink-0">
+          <Link
+            href="/admin/login"
+            className="hidden lg:inline-flex items-center gap-2 rounded-xl border border-[#872075] px-4 py-2.5 text-sm font-bold text-[#872075] hover:bg-[#872075]/8 transition-all duration-200"
+          >
+            <i className="fa-solid fa-circle-user text-sm" aria-hidden="true" />
+            Ingresar
+          </Link>
           <Link
             href="/contacto"
             className="hidden lg:inline-flex items-center gap-2 rounded-xl bg-[#872075] px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-[#872075]/20 hover:bg-[#6d1960] hover:shadow-[#872075]/30 transition-all duration-200"

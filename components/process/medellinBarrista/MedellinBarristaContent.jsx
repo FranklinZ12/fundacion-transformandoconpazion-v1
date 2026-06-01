@@ -106,7 +106,7 @@ const contacto = [
   { icon: "fa-brands fa-x-twitter",    label: "Twitter",   value: "@MedellínBarrista" },
 ];
 
-export default function MedellinBarristaContent() {
+export default function MedellinBarristaContent({ descripcion }) {
   const [lightbox, setLightbox] = useState(null);
   const [showAll, setShowAll]   = useState(false);
 
@@ -137,9 +137,7 @@ export default function MedellinBarristaContent() {
             </h2>
           </div>
           <p className="text-sm text-gray-600 leading-relaxed">
-            <strong>Medellín Barrista</strong> apoya proyectos sociales de hinchas y barristas,
-            promoviendo el deporte en paz, la convivencia y el aprovechamiento del tiempo libre
-            en dinámicas deportivas y culturales en los barrios de Medellín.
+            {descripcion ?? "Medellín Barrista apoya proyectos sociales de hinchas y barristas, promoviendo el deporte en paz, la convivencia y el aprovechamiento del tiempo libre en dinámicas deportivas y culturales en los barrios de Medellín."}
           </p>
           <div className="grid grid-cols-2 gap-3">
             {stats.map((s) => (

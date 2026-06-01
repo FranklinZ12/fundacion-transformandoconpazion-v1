@@ -18,7 +18,7 @@ export default function ProcessCard({ image, nombre, descripcion, link, categori
       {/* Photo */}
       <div className="relative aspect-[16/10] overflow-hidden bg-gray-100 flex-shrink-0">
         <Image
-          src={`/images/procesos/${image}.webp`}
+          src={image}
           alt={nombre}
           fill
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"

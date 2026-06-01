@@ -1,27 +1,10 @@
 import Image from "next/image";
 import Link from "next/link";
+import { getContent } from "@/lib/content";
 
-const stats = [
-  { number: "5+", label: "Años de impacto" },
-  { number: "10", label: "Procesos activos" },
-  { number: "15+", label: "Comunidades" },
-  { number: "1.000+", label: "Jóvenes impactados" },
-];
+export default async function HomeHero() {
+  const { hero, stats, mision, vision, objectives } = await getContent("inicio");
 
-const objectives = [
-  {
-    icon: "fa-solid fa-magnifying-glass",
-    title: "Diagnóstico Social",
-    text: "Realizamos diagnósticos en el territorio para identificar y atender las necesidades reales de cada comunidad.",
-  },
-  {
-    icon: "fa-solid fa-handshake-angle",
-    title: "Proyectos Comunitarios",
-    text: "Elaboramos proyectos, capacitaciones y eventos que vinculen a las comunidades y contribuyan a su bienestar.",
-  },
-];
-
-export default function HomeHero() {
   return (
     <>
       {/* ── HERO ── */}
@@ -41,15 +24,15 @@ export default function HomeHero() {
             {/* — Text — */}
             <div className="flex-1 text-center lg:text-left">
               <span className="mb-6 inline-block rounded-full border border-white/20 bg-white/15 px-4 py-2 text-xs font-bold uppercase tracking-wide sm:tracking-widest text-white backdrop-blur-sm">
-                Fundación · Colombia
+                {hero.badge}
               </span>
               <h1 className="text-3xl font-extrabold leading-[1.05] text-white sm:text-4xl md:text-5xl lg:text-7xl">
-                Transformando<br />
-                Con{" "}
-                <span className="text-[#f9a8d4]">Pazión</span>
+                {hero.title_line1}<br />
+                {hero.title_line2.split(" ").slice(0, -1).join(" ")}{" "}
+                <span className="text-[#f9a8d4]">{hero.title_line2.split(" ").at(-1)}</span>
               </h1>
               <p className="mt-6 max-w-lg text-lg leading-relaxed text-white/75 sm:text-xl">
-                Construimos paz, convivencia y oportunidades reales para la juventud y comunidades vulnerables de Colombia.
+                {hero.subtitle}
               </p>
               <div className="mt-10 flex flex-wrap justify-center gap-4 lg:justify-start">
                 <Link
@@ -74,7 +57,7 @@ export default function HomeHero() {
                 <div aria-hidden="true" className="absolute -inset-3 rounded-3xl bg-white/10 blur-xl" />
                 <div aria-hidden="true" className="absolute -inset-0.5 rounded-3xl bg-gradient-to-br from-white/30 to-transparent" />
                 <Image
-                  src="/images/ClubDeportivoTCP.png"
+                  src={hero.image}
                   alt="Fundación Transformando Con Pazión"
                   width={420}
                   height={420}
@@ -126,7 +109,7 @@ export default function HomeHero() {
               <i className="fa-solid fa-bullseye mb-5 text-3xl opacity-70" aria-hidden="true" />
               <h3 className="mb-4 text-2xl font-extrabold uppercase tracking-wider">Misión</h3>
               <p className="text-sm leading-relaxed text-white/85">
-                Somos una fundación sin ánimo de lucro, reconocida a nivel nacional e internacional por nuestro impacto positivo en la educación, el ambiente, el deporte y la cultura de miles de personas que han mejorado su calidad de vida y su participación ciudadana, gracias a nuestra gestión eficiente, transparente y solidaria.
+                {mision}
               </p>
             </div>
 
@@ -137,7 +120,7 @@ export default function HomeHero() {
               <i className="fa-solid fa-rocket mb-5 text-3xl opacity-70" aria-hidden="true" />
               <h3 className="mb-4 text-2xl font-extrabold uppercase tracking-wider">Visión</h3>
               <p className="text-sm leading-relaxed text-white/85">
-                En los próximos tres años, nuestra fundación se propone brindar oportunidades de educación, ambiente, deporte y cultura a las personas en situación de vulnerabilidad en todo el país, mediante proyectos innovadores, sostenibles y participativos que contribuyan a la paz y la convivencia social.
+                {vision}
               </p>
             </div>
 

@@ -1,51 +1,46 @@
 import { notFound } from "next/navigation";
-import Image from "next/image";
 import Link from "next/link";
-import { procesosData } from "@/lib/procesos";
+import { getContent, CONTENT_DEFAULTS } from "@/lib/content";
+import { createAdminClient } from "@/lib/supabase/server";
 import CurvedHeader from "@/components/ui/CurvedHeader";
-import SectionSubtitle from "@/components/ui/SectionSubtitle";
-import Descripcion from "@/components/ui/Descripcion";
+import GenericProcessContent from "@/components/process/GenericProcessContent";
 
-// Lazy import sub-components (keep bundle per-page)
-import TCPCategorias from "@/components/process/deportivoTCP/TCPCategorias";
+// Static extra-section imports (complex processes keep their unique sections)
 import ClubDeportivoTCPContent from "@/components/process/deportivoTCP/ClubDeportivoTCPContent";
 import EsySuContent from "@/components/process/esysu/EsySuContent";
-import JovempContent from "@/components/process/jovemp/JovempContent";
-import GrupoAmbientalContent from "@/components/process/grupoAmbiental/GrupoAmbientalContent";
-import AgaProductionsContent from "@/components/process/agaProductions/AgaProductionsContent";
-import NaturalWomanContent from "@/components/process/naturalWoman/NaturalWomanContent";
-import CronicasContent from "@/components/process/cronicas/CronicasContent";
 import TCPlayContent from "@/components/process/tcplay/TCPlayContent";
 import TorneoBarrialContent from "@/components/process/torneoBarrial/TorneoBarrialContent";
 import LigaGuayabalContent from "@/components/process/ligaGuayabal/LigaGuayabalContent";
 import MedellinBarristaContent from "@/components/process/medellinBarrista/MedellinBarristaContent";
 
-const headerMap = {
-  "medellin-barrista":           { title: "Medellín Barrista",          subtitle: "Hinchas y Aficionados al Deporte" },
-  "club-deportivo-tcp":          { title: "Club Deportivo TCP",          subtitle: "Fútbol de Salón" },
-  "es-y-su":                     { title: "ES&SU",                       subtitle: "Estampación y Sublimación" },
-  "jovemp":                      { title: "Jovemp",                      subtitle: "Jóvenes Emprendedores" },
-  "grupo-ambiental":             { title: "Grupo Ambiental Juvenil",     subtitle: "TCP" },
-  "aga-productions":             { title: "A.G.A. Productions",           subtitle: "Música · Eventos · Comunidad" },
-  "natural-woman":               { title: "Natural Woman",               subtitle: "Mujeres Empoderadas" },
-  "cronicas-y-pasion-deportiva": { title: "Crónicas y Pasión Deportiva", subtitle: "Programa deportivo" },
-  "tcplay":                      { title: "TC Play",                     subtitle: "¡Sé el más Tezo!" },
-  "torneo-barrial":              { title: "Torneo Barrial",              subtitle: "Vamos pa' la cancha" },
-  "liga-guayabal":               { title: "Liga Guayabal",               subtitle: "Fuerza, Talento y Pasión" },
-};
+// Processes whose layout is fully handled by GenericProcessContent
 
 export async function generateStaticParams() {
-  return procesosData
-    .filter((p) => p.link !== null)
-    .map((p) => ({ slug: p.link }));
+  // Must use admin client (no cookies) — generateStaticParams runs at build time
+  try {
+    const admin = createAdminClient();
+    const { data } = await admin
+      .from("site_content")
+      .select("data")
+      .eq("id", "procesos")
+      .single();
+    const processes = data?.data?.processes ?? CONTENT_DEFAULTS.procesos?.processes ?? [];
+    return processes.filter((p) => p.slug).map((p) => ({ slug: p.slug }));
+  } catch {
+    // Fallback to static defaults if DB unreachable at build time
+    return (CONTENT_DEFAULTS.procesos?.processes ?? [])
+      .filter((p) => p.slug)
+      .map((p) => ({ slug: p.slug }));
+  }
 }
 
 export async function generateMetadata({ params }) {
   const { slug } = await params;
-  const proceso = procesosData.find((p) => p.link === slug);
+  const { processes } = await getContent("procesos");
+  const proceso = processes.find((p) => p.slug === slug);
   return {
     title: proceso?.nombre ?? "Proceso",
-    description: proceso?.descripcion ?? "",
+    description: proceso?.card_descripcion ?? "",
   };
 }
 
@@ -63,63 +58,52 @@ function BackButton() {
   );
 }
 
+// Processes fully handled by GenericProcessContent
+const GENERIC_SLUGS = new Set([
+  "jovemp",
+  "grupo-ambiental",
+  "aga-productions",
+  "natural-woman",
+  "cronicas-y-pasion-deportiva",
+]);
+
 export default async function ProcesoSlugPage({ params }) {
   const { slug } = await params;
-  const header = headerMap[slug];
-  if (!header) notFound();
+  const { processes } = await getContent("procesos");
+  const proceso = processes.find((p) => p.slug === slug);
+  if (!proceso) notFound();
 
   let content;
-  switch (slug) {
-    case "medellin-barrista":
-      content = <MedellinBarristaContent />;
-      break;
-    case "club-deportivo-tcp":
-      content = <ClubDeportivoTCPContent />;
-      break;
-
-    case "es-y-su":
-      content = <EsySuContent />;
-      break;
-
-    case "jovemp":
-      content = <JovempContent />;
-      break;
-
-    case "grupo-ambiental":
-      content = <GrupoAmbientalContent />;
-      break;
-
-    case "aga-productions":
-      content = <AgaProductionsContent />;
-      break;
-
-    case "natural-woman":
-      content = <NaturalWomanContent />;
-      break;
-
-    case "cronicas-y-pasion-deportiva":
-      content = <CronicasContent />;
-      break;
-
-    case "torneo-barrial":
-      content = <TorneoBarrialContent />;
-      break;
-
-    case "liga-guayabal":
-      content = <LigaGuayabalContent />;
-      break;
-
-    case "tcplay":
-      content = <TCPlayContent />;
-      break;
-
-    default:
-      notFound();
+  if (GENERIC_SLUGS.has(slug)) {
+    content = <GenericProcessContent data={proceso} />;
+  } else {
+    switch (slug) {
+      case "medellin-barrista":
+        content = <MedellinBarristaContent descripcion={proceso.hero_descripcion} />;
+        break;
+      case "club-deportivo-tcp":
+        content = <ClubDeportivoTCPContent descripcion={proceso.hero_descripcion} />;
+        break;
+      case "es-y-su":
+        content = <EsySuContent descripcion={proceso.hero_descripcion} />;
+        break;
+      case "tcplay":
+        content = <TCPlayContent />;
+        break;
+      case "liga-guayabal":
+        content = <LigaGuayabalContent descripcion={proceso.hero_descripcion} />;
+        break;
+      case "torneo-barrial":
+        content = <TorneoBarrialContent descripcion={proceso.hero_descripcion} />;
+        break;
+      default:
+        notFound();
+    }
   }
 
   return (
     <>
-      <CurvedHeader title={header.title} subtitle={header.subtitle} />
+      <CurvedHeader title={proceso.header_title} subtitle={proceso.header_subtitle} />
       <section className="mx-4 sm:mx-10 md:mx-28 my-8">
         <BackButton />
         {content}

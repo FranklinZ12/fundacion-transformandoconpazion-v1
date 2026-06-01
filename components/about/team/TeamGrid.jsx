@@ -1,10 +1,11 @@
 "use client";
 import { useState } from "react";
-import { teamMembers } from "@/lib/teamData";
+import { teamMembers as defaultMembers } from "@/lib/teamData";
 import TeamCard from "./TeamCard";
 import TeamBioModal from "./TeamBioModal";
 
-export default function TeamGrid() {
+export default function TeamGrid({ members }) {
+  const teamMembers = members ?? defaultMembers;
   const [selected, setSelected] = useState(null);
   const [featured, ...rest] = teamMembers;
 

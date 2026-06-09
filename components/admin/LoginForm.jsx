@@ -90,6 +90,14 @@ export default function LoginForm() {
           placeholder="••••••••"
           className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-800 placeholder-gray-400 focus:border-[#872075] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#872075]/20 transition"
         />
+        <div className="pt-1 text-right">
+          <a
+            href="/auth/forgot-password"
+            className="text-xs font-semibold text-[#872075] hover:underline"
+          >
+            Olvidé mi contraseña
+          </a>
+        </div>
       </div>
 
       {error && (

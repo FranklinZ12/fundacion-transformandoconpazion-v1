@@ -43,6 +43,15 @@ export default async function AdminDashboardPage() {
             color="bg-[#c3171c]/10 text-[#c3171c]"
           />
         )}
+        {(profile?.role === "leader" || profile?.role === "alfabetizador") && (
+          <DashCard
+            icon="fa-hand-holding-heart"
+            title="Servicio social"
+            desc="Registra horas y revisa progreso semestral."
+            href="/admin/servicio-social"
+            color="bg-[#1d4ed8]/10 text-[#1d4ed8]"
+          />
+        )}
         <DashCard
           icon="fa-house"
           title="Ver el sitio"

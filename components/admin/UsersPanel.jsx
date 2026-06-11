@@ -7,6 +7,7 @@ import {
   rejectUser,
   updateUserPermissions,
   deleteUser,
+  updateUserPasswordByLeader,
 } from "@/app/admin/usuarios/actions";
 
 // ── Toast ──────────────────────────────────────────────────────────────────────
@@ -131,6 +132,8 @@ function UserCard({ user, notify }) {
   );
   const [perms, setPerms] = useState(user.permissions ?? []);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   const roleLabel = ROLE_ES[user.role] ?? user.role;
   const initials = (user.name ?? "?").split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
@@ -280,6 +283,55 @@ function UserCard({ user, notify }) {
                     </button>
                   </div>
                 )}
+              </div>
+
+              {/* Cambio de contraseña por líder */}
+              <div className="pt-2 border-t border-gray-100 space-y-2">
+                <p className="text-xs font-bold text-gray-600 uppercase tracking-wide">Cambiar contraseña</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <input
+                    type="password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="Nueva contraseña"
+                    className="rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-800 focus:border-[#872075] focus:outline-none focus:ring-2 focus:ring-[#872075]/20"
+                  />
+                  <input
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="Confirmar contraseña"
+                    className="rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-800 focus:border-[#872075] focus:outline-none focus:ring-2 focus:ring-[#872075]/20"
+                  />
+                </div>
+                <button
+                  onClick={() => startTransition(async () => {
+                    if (!newPassword || !confirmPassword) {
+                      notify("Completa los dos campos", "error");
+                      return;
+                    }
+                    if (newPassword.length < 8) {
+                      notify("Mínimo 8 caracteres", "error");
+                      return;
+                    }
+                    if (newPassword !== confirmPassword) {
+                      notify("Las contraseñas no coinciden", "error");
+                      return;
+                    }
+                    try {
+                      await updateUserPasswordByLeader(user.id, newPassword);
+                      setNewPassword("");
+                      setConfirmPassword("");
+                      notify("Contraseña actualizada", "success");
+                    } catch (err) {
+                      notify(err?.message || "No se pudo cambiar la contraseña", "error");
+                    }
+                  })}
+                  className="inline-flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 hover:bg-amber-100 text-amber-700 text-xs font-semibold px-3 py-2 transition-colors"
+                >
+                  <i className="fa-solid fa-key text-[10px]" aria-hidden="true" />
+                  Guardar nueva contraseña
+                </button>
               </div>
             </div>
           )}

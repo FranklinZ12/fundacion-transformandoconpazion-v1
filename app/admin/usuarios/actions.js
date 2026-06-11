@@ -70,3 +70,24 @@ export async function deleteUser(userId) {
 
   revalidatePath("/admin/usuarios");
 }
+
+export async function updateUserPasswordByLeader(userId, newPassword) {
+  const caller = await getCallerProfile();
+  if (!hasPermission(caller, "manage:users")) throw new Error("Sin permisos");
+
+  const password = String(newPassword || "").trim();
+  if (password.length < 8) {
+    throw new Error("La contraseña debe tener al menos 8 caracteres");
+  }
+
+  const supabase = createAdminClient();
+  const { error } = await supabase.auth.admin.updateUserById(userId, {
+    password,
+  });
+
+  if (error) {
+    throw new Error("No se pudo actualizar la contraseña");
+  }
+
+  revalidatePath("/admin/usuarios");
+}

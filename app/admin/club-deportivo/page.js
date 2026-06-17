@@ -4,7 +4,7 @@ import ClubDeportivoPanel from "@/components/admin/ClubDeportivoPanel";
 
 export const metadata = { title: "Club Deportivo" };
 
-const ALLOWED_ROLES = ["leader", "administrador", "consultor", "alfabetizador"];
+const ALLOWED_ROLES = ["leader", "administrador", "consultor"];
 
 export default async function ClubDeportivoPage() {
   const supabase = await createClient();

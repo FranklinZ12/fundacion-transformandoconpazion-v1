@@ -37,15 +37,17 @@ export default function RegisterForm() {
       password: form.password,
       options: {
         data: { name: form.name.trim(), reason: form.reason.trim() },
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
       },
     });
 
     if (authError) {
-      if (authError.message.includes("already registered")) {
+      const message = authError.message?.toLowerCase?.() ?? "";
+      if (message.includes("already registered") || message.includes("already been registered")) {
         setError("Este correo ya está registrado.");
+      } else if (message.includes("database error") || message.includes("saving new user")) {
+        setError("Error de base de datos al crear usuario. Revisa el trigger de profiles en Supabase.");
       } else {
-        setError("Error al crear la cuenta. Intenta de nuevo.");
+        setError(authError.message || "Error al crear la cuenta. Intenta de nuevo.");
       }
       setLoading(false);
       return;

@@ -8,6 +8,7 @@ import {
   updateUserPermissions,
   deleteUser,
   updateUserPasswordByLeader,
+  updateUserCategories,
 } from "@/app/admin/usuarios/actions";
 
 // ── Toast ──────────────────────────────────────────────────────────────────────
@@ -54,7 +55,7 @@ const ROLE_ES = {
   miembro:       "Miembro",
 };
 
-export default function UsersPanel({ users }) {
+export default function UsersPanel({ users, categories }) {
   const [toast, setToast] = useState(null);
 
   const pending  = users.filter((u) => u.status === "pending");
@@ -76,7 +77,7 @@ export default function UsersPanel({ users }) {
               Solicitudes pendientes ({pending.length})
             </h2>
             <div className="space-y-3">
-              {pending.map((u) => <UserCard key={u.id} user={u} notify={notify} />)}
+              {pending.map((u) => <UserCard key={u.id} user={u} categories={categories} notify={notify} />)}
             </div>
           </section>
         )}
@@ -95,7 +96,7 @@ export default function UsersPanel({ users }) {
               </div>
             ) : (
               <div className="space-y-3">
-                {approved.map((u) => <UserCard key={u.id} user={u} notify={notify} />)}
+                {approved.map((u) => <UserCard key={u.id} user={u} categories={categories} notify={notify} />)}
               </div>
             )}
           </section>
@@ -109,7 +110,7 @@ export default function UsersPanel({ users }) {
               Rechazados ({rejected.length})
             </h2>
             <div className="space-y-3">
-              {rejected.map((u) => <UserCard key={u.id} user={u} notify={notify} />)}
+              {rejected.map((u) => <UserCard key={u.id} user={u} categories={categories} notify={notify} />)}
             </div>
           </section>
         )}
@@ -122,7 +123,7 @@ export default function UsersPanel({ users }) {
   );
 }
 
-function UserCard({ user, notify }) {
+function UserCard({ user, categories = [], notify }) {
   const [isPending, startTransition] = useTransition();
   const [expanded, setExpanded] = useState(false);
   const [role, setRole] = useState(
@@ -134,6 +135,7 @@ function UserCard({ user, notify }) {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [categoryIds, setCategoryIds] = useState(user.categoryIds ?? []);
 
   const roleLabel = ROLE_ES[user.role] ?? user.role;
   const initials = (user.name ?? "?").split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
@@ -141,6 +143,10 @@ function UserCard({ user, notify }) {
 
   function togglePerm(code) {
     setPerms((prev) => prev.includes(code) ? prev.filter((p) => p !== code) : [...prev, code]);
+  }
+
+  function toggleCategory(id) {
+    setCategoryIds((prev) => prev.includes(id) ? prev.filter((c) => c !== id) : [...prev, id]);
   }
 
   return (
@@ -333,6 +339,42 @@ function UserCard({ user, notify }) {
                   Guardar nueva contraseña
                 </button>
               </div>
+
+              {role === "consultor" && (
+                <div className="pt-2 border-t border-gray-100 space-y-2">
+                  <p className="text-xs font-bold text-gray-600 uppercase tracking-wide">Categorias deportivas</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {categories.map((cat) => (
+                      <label key={cat.id} className="flex items-center gap-2.5 cursor-pointer group">
+                        <input
+                          type="checkbox"
+                          checked={categoryIds.includes(cat.id)}
+                          onChange={() => toggleCategory(cat.id)}
+                          className="rounded border-gray-300 text-[#872075] focus:ring-[#872075]/30"
+                        />
+                        <span className="flex items-center gap-1.5 text-sm text-gray-700 group-hover:text-[#872075] transition-colors">
+                          <i className="fa-solid fa-futbol text-xs text-gray-400" aria-hidden="true" />
+                          {cat.name}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                  <button
+                    onClick={() => startTransition(async () => {
+                      try {
+                        await updateUserCategories(user.id, categoryIds);
+                        notify("Categorias actualizadas", "info");
+                      } catch (err) {
+                        notify(err?.message || "No se pudieron guardar las categorias", "error");
+                      }
+                    })}
+                    className="inline-flex items-center gap-2 rounded-xl border border-[#872075]/20 bg-[#872075]/5 hover:bg-[#872075]/10 text-[#872075] text-xs font-semibold px-3 py-2 transition-colors"
+                  >
+                    <i className="fa-solid fa-layer-group text-[10px]" aria-hidden="true" />
+                    Guardar categorias
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </>

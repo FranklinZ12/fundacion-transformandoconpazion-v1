@@ -57,6 +57,13 @@ export async function updateUserPermissions(userId, role, permissions) {
     .update({ role, permissions: sanitized })
     .eq("id", userId);
 
+  if (role !== "consultor") {
+    await supabase
+      .from("sports_user_categories")
+      .delete()
+      .eq("user_id", userId);
+  }
+
   revalidatePath("/admin/usuarios");
 }
 
@@ -87,6 +94,48 @@ export async function updateUserPasswordByLeader(userId, newPassword) {
 
   if (error) {
     throw new Error("No se pudo actualizar la contraseña");
+  }
+
+  revalidatePath("/admin/usuarios");
+}
+
+export async function updateUserCategories(userId, categoryIds) {
+  const caller = await getCallerProfile();
+  if (!hasPermission(caller, "manage:users")) throw new Error("Sin permisos");
+
+  const supabase = createAdminClient();
+  const { data: targetProfile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", userId)
+    .single();
+
+  if (!targetProfile || targetProfile.role !== "consultor") {
+    throw new Error("Solo puedes asignar categorias a usuarios consultor");
+  }
+
+  const sanitized = Array.isArray(categoryIds)
+    ? [...new Set(categoryIds.map((id) => String(id)).filter(Boolean))]
+    : [];
+
+  const { error: deleteError } = await supabase
+    .from("sports_user_categories")
+    .delete()
+    .eq("user_id", userId);
+
+  if (deleteError) {
+    throw new Error("No se pudieron limpiar las categorias previas");
+  }
+
+  if (sanitized.length > 0) {
+    const rows = sanitized.map((categoryId) => ({ user_id: userId, category_id: categoryId }));
+    const { error: insertError } = await supabase
+      .from("sports_user_categories")
+      .insert(rows);
+
+    if (insertError) {
+      throw new Error("No se pudieron guardar las categorias");
+    }
   }
 
   revalidatePath("/admin/usuarios");

@@ -19,18 +19,35 @@ export default async function UsuariosPage() {
 
   // Usar cliente admin para bypassear RLS y leer todos los perfiles
   const adminSupabase = createAdminClient();
-  const [{ data: profiles }, { data: { users: authUsers } }] = await Promise.all([
+  const [{ data: profiles }, { data: { users: authUsers } }, { data: categories }, { data: assignments }] = await Promise.all([
     adminSupabase
       .from("profiles")
       .select("id, name, role, permissions, status, created_at")
       .neq("id", user.id)
       .order("created_at", { ascending: false }),
     adminSupabase.auth.admin.listUsers({ perPage: 1000 }),
+    adminSupabase
+      .from("sports_categories")
+      .select("id, code, name")
+      .eq("active", true)
+      .order("name"),
+    adminSupabase
+      .from("sports_user_categories")
+      .select("user_id, category_id"),
   ]);
 
   // Adjuntar email de auth a cada perfil
   const emailMap = Object.fromEntries((authUsers ?? []).map((u) => [u.id, u.email]));
-  const users = (profiles ?? []).map((p) => ({ ...p, email: emailMap[p.id] ?? null }));
+  const assignmentMap = (assignments ?? []).reduce((acc, row) => {
+    acc[row.user_id] = acc[row.user_id] ?? [];
+    acc[row.user_id].push(row.category_id);
+    return acc;
+  }, {});
+  const users = (profiles ?? []).map((p) => ({
+    ...p,
+    email: emailMap[p.id] ?? null,
+    categoryIds: assignmentMap[p.id] ?? [],
+  }));
 
   return (
     <div className="space-y-8">
@@ -40,7 +57,7 @@ export default async function UsuariosPage() {
           Gestiona solicitudes de acceso y permisos del equipo.
         </p>
       </div>
-      <UsersPanel users={users ?? []} currentUserId={user.id} />
+      <UsersPanel users={users ?? []} categories={categories ?? []} currentUserId={user.id} />
     </div>
   );
 }

@@ -52,6 +52,15 @@ export default async function AdminDashboardPage() {
             color="bg-[#1d4ed8]/10 text-[#1d4ed8]"
           />
         )}
+        {(["leader", "administrador", "consultor", "alfabetizador"].includes(profile?.role)) && (
+          <DashCard
+            icon="fa-futbol"
+            title="Club deportivo"
+            desc="Deportistas, partidos, entrenamientos y estado financiero."
+            href="/admin/club-deportivo"
+            color="bg-[#15803d]/10 text-[#15803d]"
+          />
+        )}
         <DashCard
           icon="fa-house"
           title="Ver el sitio"

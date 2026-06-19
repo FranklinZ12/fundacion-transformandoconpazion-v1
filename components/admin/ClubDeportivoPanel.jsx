@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
+import { hasPermission } from "@/lib/permissions";
 import {
   createAthlete,
   createTraining,
@@ -38,7 +39,7 @@ export default function ClubDeportivoPanel({
 }) {
   const [isPending, startTransition] = useTransition();
   const [msg, setMsg] = useState(null);
-  const canManage = ["leader", "administrador"].includes(profile.role);
+  const canManage = hasPermission(profile, "manage:sports");
   const isConsultor = profile.role === "consultor";
 
   const scopeCategories = useMemo(

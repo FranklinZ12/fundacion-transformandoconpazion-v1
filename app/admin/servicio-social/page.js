@@ -23,7 +23,7 @@ export default async function ServicioSocialPage() {
     .single();
 
   if (!profile || profile.status !== "approved") redirect("/admin");
-  if (!["leader", "alfabetizador"].includes(profile.role)) redirect("/admin");
+  if (!["administrador", "alfabetizador"].includes(profile.role)) redirect("/admin");
 
   const [{ data: semesterConfigs }, { data: myActivities }, { data: myProgressRows }] = await Promise.all([
     supabase
@@ -53,9 +53,9 @@ export default async function ServicioSocialPage() {
   };
   const totalHistoricalHours = (myActivities ?? []).reduce((acc, item) => acc + Number(item.hours || 0), 0);
 
-  let leaderStats = null;
+  let adminStats = null;
 
-  if (profile.role === "leader") {
+  if (profile.role === "administrador") {
     const admin = createAdminClient();
     const [{ data: alfabetizadores }, { data: allActivities }, { data: progressRows }] = await Promise.all([
       admin
@@ -105,7 +105,7 @@ export default async function ServicioSocialPage() {
       .map(([semester, hours]) => ({ semester, hours: Number(hours.toFixed(2)) }))
       .sort((a, b) => (a.semester < b.semester ? 1 : -1));
 
-    leaderStats = {
+    adminStats = {
       totalAlfabetizadores,
       usersCumplen,
       usersPendientes,
@@ -124,7 +124,7 @@ export default async function ServicioSocialPage() {
       mySummary={myProgressRows ?? []}
       totalHistoricalHours={Number(totalHistoricalHours.toFixed(2))}
       semesterConfigs={semesterConfigs ?? []}
-      leaderStats={leaderStats}
+      adminStats={adminStats}
     />
   );
 }

@@ -90,7 +90,7 @@ alter table public.sports_trainings enable row level security;
 alter table public.sports_matches enable row level security;
 alter table public.sports_finance enable row level security;
 
-create or replace function public.sports_is_leader()
+create or replace function public.sports_is_admin()
 returns boolean
 language sql
 stable
@@ -100,7 +100,7 @@ as $$
     from public.profiles p
     where p.id = auth.uid()
       and p.status = 'approved'
-      and p.role = 'leader'
+      and p.role = 'administrador'
   );
 $$;
 
@@ -125,60 +125,60 @@ to authenticated
 using (true);
 
 -- asignaciones
-drop policy if exists sports_user_categories_select_own_or_leader on public.sports_user_categories;
-create policy sports_user_categories_select_own_or_leader
+drop policy if exists sports_user_categories_select_own_or_admin on public.sports_user_categories;
+create policy sports_user_categories_select_own_or_admin
 on public.sports_user_categories for select
 to authenticated
-using (user_id = auth.uid() or public.sports_is_leader());
+using (user_id = auth.uid() or public.sports_is_admin());
 
-drop policy if exists sports_user_categories_manage_leader on public.sports_user_categories;
-create policy sports_user_categories_manage_leader
+drop policy if exists sports_user_categories_manage_admin on public.sports_user_categories;
+create policy sports_user_categories_manage_admin
 on public.sports_user_categories for all
 to authenticated
-using (public.sports_is_leader())
-with check (public.sports_is_leader());
+using (public.sports_is_admin())
+with check (public.sports_is_admin());
 
 -- deportistas
 drop policy if exists sports_athletes_select_scoped on public.sports_athletes;
 create policy sports_athletes_select_scoped
 on public.sports_athletes for select
 to authenticated
-using (public.sports_is_leader() or public.sports_has_category(category_id));
+using (public.sports_is_admin() or public.sports_has_category(category_id));
 
 drop policy if exists sports_athletes_manage_scoped on public.sports_athletes;
 create policy sports_athletes_manage_scoped
 on public.sports_athletes for all
 to authenticated
-using (public.sports_is_leader() or public.sports_has_category(category_id))
-with check (public.sports_is_leader() or public.sports_has_category(category_id));
+using (public.sports_is_admin() or public.sports_has_category(category_id))
+with check (public.sports_is_admin() or public.sports_has_category(category_id));
 
 -- entrenamientos
 drop policy if exists sports_trainings_select_scoped on public.sports_trainings;
 create policy sports_trainings_select_scoped
 on public.sports_trainings for select
 to authenticated
-using (public.sports_is_leader() or public.sports_has_category(category_id));
+using (public.sports_is_admin() or public.sports_has_category(category_id));
 
 drop policy if exists sports_trainings_manage_scoped on public.sports_trainings;
 create policy sports_trainings_manage_scoped
 on public.sports_trainings for all
 to authenticated
-using (public.sports_is_leader() or public.sports_has_category(category_id))
-with check (public.sports_is_leader() or public.sports_has_category(category_id));
+using (public.sports_is_admin() or public.sports_has_category(category_id))
+with check (public.sports_is_admin() or public.sports_has_category(category_id));
 
 -- partidos
 drop policy if exists sports_matches_select_scoped on public.sports_matches;
 create policy sports_matches_select_scoped
 on public.sports_matches for select
 to authenticated
-using (public.sports_is_leader() or public.sports_has_category(category_id));
+using (public.sports_is_admin() or public.sports_has_category(category_id));
 
 drop policy if exists sports_matches_manage_scoped on public.sports_matches;
 create policy sports_matches_manage_scoped
 on public.sports_matches for all
 to authenticated
-using (public.sports_is_leader() or public.sports_has_category(category_id))
-with check (public.sports_is_leader() or public.sports_has_category(category_id));
+using (public.sports_is_admin() or public.sports_has_category(category_id))
+with check (public.sports_is_admin() or public.sports_has_category(category_id));
 
 -- estado financiero (valida contra categoria del deportista)
 drop policy if exists sports_finance_select_scoped on public.sports_finance;
@@ -186,7 +186,7 @@ create policy sports_finance_select_scoped
 on public.sports_finance for select
 to authenticated
 using (
-  public.sports_is_leader() or exists (
+  public.sports_is_admin() or exists (
     select 1
     from public.sports_athletes a
     where a.id = athlete_id
@@ -199,7 +199,7 @@ create policy sports_finance_manage_scoped
 on public.sports_finance for all
 to authenticated
 using (
-  public.sports_is_leader() or exists (
+  public.sports_is_admin() or exists (
     select 1
     from public.sports_athletes a
     where a.id = athlete_id
@@ -207,7 +207,7 @@ using (
   )
 )
 with check (
-  public.sports_is_leader() or exists (
+  public.sports_is_admin() or exists (
     select 1
     from public.sports_athletes a
     where a.id = athlete_id

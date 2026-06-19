@@ -13,8 +13,8 @@
 create table if not exists public.profiles (
   id          uuid primary key references auth.users(id) on delete cascade,
   name        text not null,
-  role        text not null default 'member'
-                check (role in ('leader', 'editor', 'member')),
+  role        text not null default 'miembro'
+                check (role in ('administrador', 'alfabetizador', 'consultor', 'miembro')),
   permissions text[] not null default '{}',
   status      text not null default 'pending'
                 check (status in ('pending', 'approved', 'rejected')),
@@ -112,15 +112,15 @@ create or replace trigger on_auth_user_created
 
 
 -- ────────────────────────────────────────────────────────────
--- 5. SEED: primer usuario líder
---    Ejecutar DESPUÉS de que el líder se registre normalmente.
---    Reemplazar 'EMAIL_DEL_LIDER@ejemplo.com' con el email real.
+-- 5. SEED: primer usuario administrador
+--    Ejecutar DESPUÉS de que el administrador se registre normalmente.
+--    Reemplazar 'EMAIL_DEL_ADMIN@ejemplo.com' con el email real.
 -- ────────────────────────────────────────────────────────────
 
 -- update public.profiles
--- set role = 'leader', status = 'approved'
+-- set role = 'administrador', status = 'approved'
 -- where id = (
---   select id from auth.users where email = 'EMAIL_DEL_LIDER@ejemplo.com'
+--   select id from auth.users where email = 'EMAIL_DEL_ADMIN@ejemplo.com'
 -- );
 
 

@@ -25,7 +25,7 @@ export async function uploadContentImage(formData) {
     .single();
 
   const canEdit =
-    profile?.role === "leader" ||
+    profile?.role === "administrador" ||
     (Array.isArray(profile?.permissions) && profile.permissions.includes("edit:content"));
 
   if (!canEdit) throw new Error("No tienes permiso para subir imágenes.");

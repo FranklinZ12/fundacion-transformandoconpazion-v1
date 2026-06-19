@@ -86,7 +86,7 @@ export async function upsertSemesterRequirement(formData) {
   try {
     const { profile } = await getCallerProfile();
 
-    if (!profile || profile.status !== "approved" || profile.role !== "leader") {
+    if (!profile || profile.status !== "approved" || profile.role !== "administrador") {
       return { error: "Solo el líder puede configurar metas." };
     }
 

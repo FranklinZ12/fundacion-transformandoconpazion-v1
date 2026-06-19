@@ -25,13 +25,13 @@ export default function ServiceSocialPanel({
   mySummary,
   totalHistoricalHours,
   semesterConfigs,
-  leaderStats,
+  adminStats,
 }) {
   const [isPending, startTransition] = useTransition();
   const [activityMsg, setActivityMsg] = useState(null);
   const [configMsg, setConfigMsg] = useState(null);
 
-  const isLeader = profile.role === "leader";
+  const isAdmin = profile.role === "administrador";
   const canRegisterActivities = profile.role === "alfabetizador";
 
   const currentYear = new Date().getFullYear();
@@ -188,7 +188,7 @@ export default function ServiceSocialPanel({
         </div>
       </div>
 
-      {isLeader && leaderStats && (
+      {isAdmin && adminStats && (
         <>
           <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
             <h2 className="text-lg font-extrabold text-gray-800 mb-4">Configuración semestral</h2>
@@ -244,9 +244,9 @@ export default function ServiceSocialPanel({
           </div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <StatCard title="Alfabetizadores" value={leaderStats.totalAlfabetizadores} />
-            <StatCard title="Cumplen meta" value={leaderStats.usersCumplen} color="text-green-600" />
-            <StatCard title="Pendientes" value={leaderStats.usersPendientes} color="text-amber-600" />
+            <StatCard title="Alfabetizadores" value={adminStats.totalAlfabetizadores} />
+            <StatCard title="Cumplen meta" value={adminStats.usersCumplen} color="text-green-600" />
+            <StatCard title="Pendientes" value={adminStats.usersPendientes} color="text-amber-600" />
             <StatCard title="Semestre actual" value={currentSemesterCode} color="text-gray-700" />
           </div>
 
@@ -261,10 +261,10 @@ export default function ServiceSocialPanel({
                   </tr>
                 </thead>
                 <tbody>
-                  {leaderStats.bySemester.length === 0 ? (
+                  {adminStats.bySemester.length === 0 ? (
                     <tr><td colSpan={2} className="py-6 text-center text-gray-400">Sin datos.</td></tr>
                   ) : (
-                    leaderStats.bySemester.map((row) => (
+                    adminStats.bySemester.map((row) => (
                       <tr key={row.semester} className="border-t border-gray-50">
                         <td className="py-2.5 text-gray-700 font-semibold">{row.semester}</td>
                         <td className="py-2.5 text-right text-[#872075] font-bold">{row.hours.toFixed(2)}</td>
@@ -285,10 +285,10 @@ export default function ServiceSocialPanel({
                   </tr>
                 </thead>
                 <tbody>
-                  {leaderStats.ranking.length === 0 ? (
+                  {adminStats.ranking.length === 0 ? (
                     <tr><td colSpan={2} className="py-6 text-center text-gray-400">Sin datos.</td></tr>
                   ) : (
-                    leaderStats.ranking.map((row, index) => (
+                    adminStats.ranking.map((row, index) => (
                       <tr key={`${row.name}-${index}`} className="border-t border-gray-50">
                         <td className="py-2.5 text-gray-700">{index + 1}. {row.name}</td>
                         <td className="py-2.5 text-right text-[#872075] font-bold">{row.hours.toFixed(2)}</td>

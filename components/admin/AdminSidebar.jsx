@@ -7,7 +7,6 @@ import { useRouter } from "next/navigation";
 import { hasPermission } from "@/lib/permissions";
 
 const ROLE_ES = {
-  leader:        "Líder",
   administrador: "Administrador",
   alfabetizador: "Alfabetizador",
   consultor:     "Consultor",
@@ -16,8 +15,8 @@ const ROLE_ES = {
 
 const navItems = [
   { href: "/admin",             icon: "fa-gauge",           label: "Dashboard",     permission: null },
-  { href: "/admin/club-deportivo", icon: "fa-futbol", label: "Club deportivo", permission: null, roles: ["leader", "administrador", "consultor"] },
-  { href: "/admin/servicio-social", icon: "fa-hand-holding-heart", label: "Servicio social", permission: null, roles: ["leader", "alfabetizador"] },
+  { href: "/admin/club-deportivo", icon: "fa-futbol", label: "Club deportivo", permission: "manage:sports" },
+  { href: "/admin/servicio-social", icon: "fa-hand-holding-heart", label: "Servicio social", permission: null, roles: ["administrador", "alfabetizador"] },
   { href: "/admin/contenido",   icon: "fa-file-pen",        label: "Contenido",     permission: "edit:content" },
   { href: "/admin/usuarios",    icon: "fa-users",           label: "Usuarios",      permission: "manage:users" },
 ];

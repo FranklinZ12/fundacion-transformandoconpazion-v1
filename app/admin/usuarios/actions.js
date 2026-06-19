@@ -57,7 +57,7 @@ export async function updateUserPermissions(userId, role, permissions) {
     .update({ role, permissions: sanitized })
     .eq("id", userId);
 
-  if (role !== "consultor") {
+  if (role !== "consultor" && !sanitized.includes("manage:sports")) {
     await supabase
       .from("sports_user_categories")
       .delete()
@@ -106,12 +106,16 @@ export async function updateUserCategories(userId, categoryIds) {
   const supabase = createAdminClient();
   const { data: targetProfile } = await supabase
     .from("profiles")
-    .select("role")
+    .select("role, permissions")
     .eq("id", userId)
     .single();
 
-  if (!targetProfile || targetProfile.role !== "consultor") {
-    throw new Error("Solo puedes asignar categorias a usuarios consultor");
+  const canHaveCategories =
+    targetProfile?.role === "consultor" ||
+    (Array.isArray(targetProfile?.permissions) && targetProfile.permissions.includes("manage:sports"));
+
+  if (!targetProfile || !canHaveCategories) {
+    throw new Error("Solo puedes asignar categorias a consultores o gestores deportivos");
   }
 
   const sanitized = Array.isArray(categoryIds)

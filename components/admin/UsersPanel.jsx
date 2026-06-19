@@ -48,7 +48,6 @@ const ROLE_OPTIONS = [
 ];
 
 const ROLE_ES = {
-  leader:        "Líder",
   administrador: "Administrador",
   alfabetizador: "Alfabetizador",
   consultor:     "Consultor",
@@ -201,8 +200,8 @@ function UserCard({ user, categories = [], notify }) {
         )}
       </div>
 
-      {/* Expandir permisos (solo aprobados, no líderes) */}
-      {user.status === "approved" && user.role !== "leader" && (
+      {/* Expandir permisos (solo aprobados) */}
+      {user.status === "approved" && (
         <>
           <div className="border-t border-gray-100 px-5 py-2">
             <button
@@ -340,7 +339,7 @@ function UserCard({ user, categories = [], notify }) {
                 </button>
               </div>
 
-              {role === "consultor" && (
+              {(role === "consultor" || perms.includes("manage:sports")) && (
                 <div className="pt-2 border-t border-gray-100 space-y-2">
                   <p className="text-xs font-bold text-gray-600 uppercase tracking-wide">Categorias deportivas</p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">

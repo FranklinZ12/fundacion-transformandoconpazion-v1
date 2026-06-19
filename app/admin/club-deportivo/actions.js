@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
+import { hasPermission } from "@/lib/permissions";
 
 async function getScope() {
   const supabase = await createClient();
@@ -29,11 +30,11 @@ async function getScope() {
 
 function canManageSports(profile) {
   if (!profile || profile.status !== "approved") return false;
-  return ["leader", "administrador"].includes(profile.role);
+  return hasPermission(profile, "manage:sports");
 }
 
 function canUseCategory(profile, categoryIds, categoryId) {
-  if (profile?.role === "leader") return true;
+  if (profile?.role === "administrador") return true;
   return categoryIds.includes(categoryId);
 }
 

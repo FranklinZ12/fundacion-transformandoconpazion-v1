@@ -43,7 +43,7 @@ export default async function AdminDashboardPage() {
             color="bg-[#c3171c]/10 text-[#c3171c]"
           />
         )}
-        {(profile?.role === "leader" || profile?.role === "alfabetizador") && (
+        {(profile?.role === "administrador" || profile?.role === "alfabetizador") && (
           <DashCard
             icon="fa-hand-holding-heart"
             title="Servicio social"
@@ -52,7 +52,7 @@ export default async function AdminDashboardPage() {
             color="bg-[#1d4ed8]/10 text-[#1d4ed8]"
           />
         )}
-        {(["leader", "administrador", "consultor", "alfabetizador"].includes(profile?.role)) && (
+        {(hasPermission(profile, "manage:sports") || profile?.role === "consultor") && (
           <DashCard
             icon="fa-futbol"
             title="Club deportivo"

@@ -1,10 +1,9 @@
 import { redirect } from "next/navigation";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
+import { hasPermission } from "@/lib/permissions";
 import ClubDeportivoPanel from "@/components/admin/ClubDeportivoPanel";
 
 export const metadata = { title: "Club Deportivo" };
-
-const ALLOWED_ROLES = ["leader", "administrador", "consultor"];
 
 export default async function ClubDeportivoPage() {
   const supabase = await createClient();
@@ -17,7 +16,8 @@ export default async function ClubDeportivoPage() {
     .eq("id", user.id)
     .single();
 
-  if (!profile || profile.status !== "approved" || !ALLOWED_ROLES.includes(profile.role)) {
+  const canAccess = hasPermission(profile, "manage:sports") || profile.role === "consultor";
+  if (!profile || profile.status !== "approved" || !canAccess) {
     redirect("/admin");
   }
 
@@ -28,7 +28,7 @@ export default async function ClubDeportivoPage() {
     admin.from("sports_user_categories").select("category_id").eq("user_id", user.id),
   ]);
 
-  const canManage = ["leader", "administrador"].includes(profile.role);
+  const canManage = hasPermission(profile, "manage:sports");
   const consultorUsers = canManage
     ? ((await admin
       .from("profiles")
@@ -93,11 +93,11 @@ export default async function ClubDeportivoPage() {
   }
 
   const categoryIds = (userCategories ?? []).map((r) => r.category_id);
-  const scopedCategoryIds = profile.role === "leader"
+  const scopedCategoryIds = profile.role === "administrador"
     ? (categories ?? []).map((c) => c.id)
     : categoryIds;
 
-  const hasAccess = profile.role === "leader" || scopedCategoryIds.length > 0;
+  const hasAccess = profile.role === "administrador" || scopedCategoryIds.length > 0;
   if (!hasAccess) {
     return (
       <div className="space-y-3">

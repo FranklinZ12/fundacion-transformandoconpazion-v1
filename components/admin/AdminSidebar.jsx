@@ -16,6 +16,7 @@ const ROLE_ES = {
 const navItems = [
   { href: "/admin",             icon: "fa-gauge",           label: "Dashboard",     permission: null },
   { href: "/admin/club-deportivo", icon: "fa-futbol", label: "Club deportivo", permission: "manage:sports" },
+  { href: "/admin/foro",        icon: "fa-bullhorn",        label: "Foros",         permission: null },
   { href: "/admin/servicio-social", icon: "fa-hand-holding-heart", label: "Servicio social", permission: null, roles: ["administrador", "alfabetizador"] },
   { href: "/admin/contenido",   icon: "fa-file-pen",        label: "Contenido",     permission: "edit:content" },
   { href: "/admin/usuarios",    icon: "fa-users",           label: "Usuarios",      permission: "manage:users" },
@@ -70,6 +71,24 @@ export default function AdminSidebar({ profile }) {
             </Link>
           );
         })}
+
+        {/* Link al sitio público */}
+        <div className="pt-3 border-t border-gray-100 mt-1">
+          <Link
+            href="/"
+            className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-gray-400 hover:text-[#872075] hover:bg-[#872075]/5 transition-colors font-medium"
+          >
+            <i className="fa-solid fa-globe w-4 text-center text-xs" aria-hidden="true" />
+            Ver sitio web
+          </Link>
+          <Link
+            href="/foro"
+            className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-gray-400 hover:text-[#872075] hover:bg-[#872075]/5 transition-colors font-medium"
+          >
+            <i className="fa-solid fa-comments w-4 text-center text-xs" aria-hidden="true" />
+            Foros públicos
+          </Link>
+        </div>
       </nav>
 
       {/* Usuario + logout */}

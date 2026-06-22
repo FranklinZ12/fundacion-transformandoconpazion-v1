@@ -32,6 +32,7 @@ export const navLinks = [
       { href: "/procesos/tcplay", label: "TC Play", icon: "fa-gamepad" },
     ],
   },
+  { href: "/foro", label: "Foros" },
   { href: "/contacto", label: "Contacto" },
 ];
 

@@ -4,6 +4,7 @@ import { getContent, CONTENT_DEFAULTS } from "@/lib/content";
 import { createAdminClient } from "@/lib/supabase/server";
 import CurvedHeader from "@/components/ui/CurvedHeader";
 import GenericProcessContent from "@/components/process/GenericProcessContent";
+import ForumLink from "@/components/foro/ForumLink";
 
 // Static extra-section imports (complex processes keep their unique sections)
 import ClubDeportivoTCPContent from "@/components/process/deportivoTCP/ClubDeportivoTCPContent";
@@ -107,6 +108,7 @@ export default async function ProcesoSlugPage({ params }) {
       <section className="mx-4 sm:mx-10 md:mx-28 my-8">
         <BackButton />
         {content}
+        <ForumLink slug={slug} />
       </section>
     </>
   );

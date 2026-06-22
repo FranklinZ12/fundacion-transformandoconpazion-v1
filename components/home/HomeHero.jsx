@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { getContent } from "@/lib/content";
+import HomeForumSection from "@/components/foro/HomeForumSection";
 
 export default async function HomeHero() {
   const { hero, stats, mision, vision, objectives } = await getContent("inicio");
@@ -152,6 +153,9 @@ export default async function HomeHero() {
           </div>
         </div>
       </section>
+
+      {/* ── FOROS ── */}
+      <HomeForumSection />
     </>
   );
 }

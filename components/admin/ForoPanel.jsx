@@ -391,6 +391,15 @@ function CreateForumForm({ users, action, onSuccess }) {
           </option>
         ))}
       </select>
+      <label className="flex items-center gap-2 px-3 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-700">
+        <input
+          type="checkbox"
+          name="allow_comments"
+          value="true"
+          defaultChecked
+        />
+        Permitir comentarios de miembros
+      </label>
       <button
         disabled={isPending}
         className="w-full rounded-xl bg-[#872075] text-white font-bold py-2.5 text-sm hover:bg-[#6f1a60] disabled:opacity-60"
@@ -690,6 +699,15 @@ function ConfigTab({ forum, users, isPending, onUpdate, onDelete }) {
               defaultChecked={forum.is_active}
             />
             Foro activo
+          </label>
+          <label className="flex items-center gap-2 px-3 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-700">
+            <input
+              type="checkbox"
+              name="allow_comments"
+              value="true"
+              defaultChecked={forum.allow_comments !== false}
+            />
+            Permitir comentarios de miembros
           </label>
           <button
             disabled={isPending}

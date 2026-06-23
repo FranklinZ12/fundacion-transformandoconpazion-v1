@@ -13,9 +13,21 @@ create table if not exists public.forums (
   description text,
   coordinator_id uuid references public.profiles(id) on delete set null,
   is_active   boolean not null default true,
+  allow_comments boolean not null default true,
   created_at  timestamptz not null default now(),
   updated_at  timestamptz not null default now()
 );
+
+-- Migracion: agregar columna allow_comments si no existe
+do $$
+begin
+  if not exists (
+    select 1 from information_schema.columns
+    where table_name = 'forums' and column_name = 'allow_comments'
+  ) then
+    alter table public.forums add column allow_comments boolean not null default true;
+  end if;
+end $$;
 
 -- 2. Miembros del foro
 create table if not exists public.forum_members (

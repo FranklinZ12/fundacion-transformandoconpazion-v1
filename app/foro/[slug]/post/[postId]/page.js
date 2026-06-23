@@ -43,7 +43,7 @@ export default async function ForumPostPage({ params }) {
 
   const { data: forumDetail } = await admin
     .from("forums")
-    .select("id, name, description, coordinator_id, coordinator:coordinator_id(id, name)")
+    .select("id, name, description, coordinator_id, allow_comments, coordinator:coordinator_id(id, name)")
     .eq("id", forum.id)
     .single();
 
@@ -89,6 +89,8 @@ export default async function ForumPostPage({ params }) {
     }
   }
 
+  const forumAllowsComments = forumDetail?.allow_comments !== false;
+
   return (
     <>
       <CurvedHeader title={forum.name} subtitle="Foro de la comunidad" />
@@ -132,43 +134,56 @@ export default async function ForumPostPage({ params }) {
                 </h2>
               </div>
 
-              {canComment ? (
-                <CommentForm postId={postId} />
-              ) : user ? (
-                membership?.status === "pending" ? (
-                  <ForumCard className="p-6">
-                    <div className="rounded-xl bg-amber-50 border border-amber-100 px-4 py-3">
-                      <p className="text-sm text-amber-700">
-                        Tu solicitud de membresía está pendiente. Una vez aprobada podrás comentar.
+              {forumAllowsComments ? (
+                <>
+                  {canComment ? (
+                    <CommentForm postId={postId} />
+                  ) : user ? (
+                    membership?.status === "pending" ? (
+                      <ForumCard className="p-6">
+                        <div className="rounded-xl bg-amber-50 border border-amber-100 px-4 py-3">
+                          <p className="text-sm text-amber-700">
+                            Tu solicitud de membresía está pendiente. Una vez aprobada podrás comentar.
+                          </p>
+                        </div>
+                      </ForumCard>
+                    ) : (
+                      <ForumCard className="p-6">
+                        <h3 className="text-base font-extrabold text-gray-900 mb-2">
+                          Unirse al foro para comentar
+                        </h3>
+                        <p className="text-sm text-gray-600 mb-4">
+                          Debés ser miembro aprobado de este foro para dejar un comentario.
+                        </p>
+                        <JoinForumButton forumId={forum.id} />
+                      </ForumCard>
+                    )
+                  ) : (
+                    <ForumCard className="p-6">
+                      <h3 className="text-base font-extrabold text-gray-900 mb-2">
+                        Iniciar sesión para comentar
+                      </h3>
+                      <p className="text-sm text-gray-600 mb-4">
+                        Ingresá a tu cuenta para unirte al foro y participar en la conversación.
                       </p>
-                    </div>
-                  </ForumCard>
-                ) : (
-                  <ForumCard className="p-6">
-                    <h3 className="text-base font-extrabold text-gray-900 mb-2">
-                      Unirse al foro para comentar
-                    </h3>
-                    <p className="text-sm text-gray-600 mb-4">
-                      Debés ser miembro aprobado de este foro para dejar un comentario.
-                    </p>
-                    <JoinForumButton forumId={forum.id} />
-                  </ForumCard>
-                )
+                      <Link
+                        href="/admin/login"
+                        className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#872075] px-4 py-2.5 text-sm font-bold text-white hover:bg-[#6f1a60] transition-colors"
+                      >
+                        <i className="fa-solid fa-circle-user text-sm" aria-hidden="true" />
+                        Iniciar sesión
+                      </Link>
+                    </ForumCard>
+                  )}
+                </>
               ) : (
                 <ForumCard className="p-6">
-                  <h3 className="text-base font-extrabold text-gray-900 mb-2">
-                    Iniciar sesión para comentar
-                  </h3>
-                  <p className="text-sm text-gray-600 mb-4">
-                    Ingresá a tu cuenta para unirte al foro y participar en la conversación.
-                  </p>
-                  <Link
-                    href="/admin/login"
-                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#872075] px-4 py-2.5 text-sm font-bold text-white hover:bg-[#6f1a60] transition-colors"
-                  >
-                    <i className="fa-solid fa-circle-user text-sm" aria-hidden="true" />
-                    Iniciar sesión
-                  </Link>
+                  <div className="rounded-xl bg-blue-50 border border-blue-100 px-4 py-3">
+                    <p className="text-sm text-blue-700">
+                      <i className="fa-solid fa-circle-info mr-1" aria-hidden="true" />
+                      Este es un foro informativo. Solo el coordinador puede publicar.
+                    </p>
+                  </div>
                 </ForumCard>
               )}
 
@@ -176,7 +191,9 @@ export default async function ForumPostPage({ params }) {
                 {(comments ?? []).length === 0 ? (
                   <ForumCard className="p-6 text-center">
                     <i className="fa-solid fa-comments text-4xl text-gray-300 mb-3 block" aria-hidden="true" />
-                    <p className="text-sm text-gray-500">Aún no hay comentarios. Sé el primero.</p>
+                    <p className="text-sm text-gray-500">
+                      {forumAllowsComments ? "Aún no hay comentarios. Sé el primero." : "Aún no hay comentarios."}
+                    </p>
                   </ForumCard>
                 ) : (
                   (comments ?? []).map((comment) => (

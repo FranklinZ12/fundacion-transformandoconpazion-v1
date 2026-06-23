@@ -166,7 +166,18 @@ export default async function ForumPublicPage({ params }) {
               </div>
             </ForumCard>
 
-            {!user && (
+            {!forum.allow_comments && (
+              <ForumCard className="p-6">
+                <div className="rounded-xl bg-blue-50 border border-blue-100 px-4 py-3">
+                  <p className="text-sm text-blue-700">
+                    <i className="fa-solid fa-circle-info mr-1" aria-hidden="true" />
+                    Este es un foro informativo. Solo el coordinador puede publicar.
+                  </p>
+                </div>
+              </ForumCard>
+            )}
+
+            {forum.allow_comments && !user && (
               <ForumCard className="p-6">
                 <h3 className="text-base font-extrabold text-gray-900 mb-3">¿Querés participar?</h3>
                 <p className="text-sm text-gray-600 mb-4">
@@ -182,7 +193,7 @@ export default async function ForumPublicPage({ params }) {
               </ForumCard>
             )}
 
-            {user && profile?.status === "approved" && !isCoordinator && (
+            {forum.allow_comments && user && profile?.status === "approved" && !isCoordinator && (
               <ForumCard className="p-6">
                 <h3 className="text-base font-extrabold text-gray-900 mb-3">Tu membresía</h3>
                 {membership?.status === "approved" ? (
@@ -204,7 +215,7 @@ export default async function ForumPublicPage({ params }) {
               </ForumCard>
             )}
 
-            {user && profile?.status !== "approved" && (
+            {forum.allow_comments && user && profile?.status !== "approved" && (
               <ForumCard className="p-6">
                 <div className="rounded-xl bg-amber-50 border border-amber-100 px-4 py-3">
                   <p className="text-sm text-amber-700">

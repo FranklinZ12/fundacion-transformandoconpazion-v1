@@ -64,6 +64,7 @@ export async function createForum(formData) {
   const name = formData.get("name")?.toString().trim();
   const description = formData.get("description")?.toString().trim() || null;
   const coordinatorId = formData.get("coordinator_id")?.toString() || null;
+  const allowComments = formData.get("allow_comments") === "true";
 
   if (!slug || !name) return { error: "Slug y nombre son requeridos." };
   if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
@@ -88,6 +89,7 @@ export async function createForum(formData) {
     name,
     description,
     coordinator_id: coordinatorId || null,
+    allow_comments: allowComments,
   });
 
   if (error) {
@@ -111,6 +113,7 @@ export async function updateForum(formData) {
   const description = formData.get("description")?.toString().trim() || null;
   const coordinatorId = formData.get("coordinator_id")?.toString() || null;
   const isActive = formData.get("is_active") === "true";
+  const allowComments = formData.get("allow_comments") === "true";
 
   if (!name) return { error: "Nombre requerido." };
 
@@ -129,7 +132,7 @@ export async function updateForum(formData) {
 
   const { error } = await admin
     .from("forums")
-    .update({ name, description, coordinator_id: coordinatorId || null, is_active: isActive })
+    .update({ name, description, coordinator_id: coordinatorId || null, is_active: isActive, allow_comments: allowComments })
     .eq("id", forumId);
 
   if (error) return { error: error.message || "No se pudo actualizar el foro." };
@@ -296,6 +299,14 @@ export async function requestMembership(forumId) {
 
   const admin = createAdminClient();
 
+  const { data: forum } = await admin
+    .from("forums")
+    .select("id, allow_comments")
+    .eq("id", forumId)
+    .single();
+
+  if (!forum?.allow_comments) return { error: "Este foro es informativo, no se aceptan miembros." };
+
   const { data: existing } = await admin
     .from("forum_members")
     .select("id, status")
@@ -413,11 +424,14 @@ export async function createComment(formData) {
   const admin = createAdminClient();
   const { data: post } = await admin
     .from("forum_posts")
-    .select("id, forum_id, forums(slug)")
+    .select("id, forum_id, forums(slug, allow_comments)")
     .eq("id", postId)
     .single();
 
   if (!post) return { error: "Post no encontrado." };
+
+  const forumData = Array.isArray(post.forums) ? post.forums[0] : post.forums;
+  if (!forumData?.allow_comments) return { error: "Este foro es informativo, no se permiten comentarios." };
 
   const isMember = await isForumMember(caller, post.forum_id);
   const canManage = await canManageForum(caller, post.forum_id);
@@ -434,11 +448,10 @@ export async function createComment(formData) {
 
   if (error) return { error: error.message || "No se pudo guardar el comentario." };
 
-  const slug = Array.isArray(post.forums) ? post.forums[0]?.slug : post.forums?.slug;
   revalidatePath("/");
   revalidatePath("/foro");
-  revalidatePath(`/foro/${slug}/post/${postId}`);
-  revalidatePath(`/foro/${slug}`);
+  revalidatePath(`/foro/${forumData.slug}/post/${postId}`);
+  revalidatePath(`/foro/${forumData.slug}`);
   return { success: true };
 }
 

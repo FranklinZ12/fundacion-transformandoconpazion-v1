@@ -4,6 +4,7 @@ import { createClient, createAdminClient } from "@/lib/supabase/server";
 import CurvedHeader from "@/components/ui/CurvedHeader";
 import CommentForm from "@/components/foro/CommentForm";
 import JoinForumButton from "@/components/foro/JoinForumButton";
+import ApplyForm from "@/components/foro/ApplyForm";
 import {
   ForumPageLayout,
   ForumCard,
@@ -43,16 +44,9 @@ export default async function ForumPostPage({ params }) {
 
   const { data: forumDetail } = await admin
     .from("forums")
-    .select("id, name, description, coordinator_id, allow_comments, coordinator:coordinator_id(id, name)")
+    .select("id, name, description, coordinator_id, allow_comments, allow_applications, visibility, coordinator:coordinator_id(id, name)")
     .eq("id", forum.id)
     .single();
-
-  const { data: comments } = await admin
-    .from("forum_comments")
-    .select("*, profiles(id, name)")
-    .eq("post_id", postId)
-    .order("created_at", { ascending: true })
-    .limit(50);
 
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -61,6 +55,8 @@ export default async function ForumPostPage({ params }) {
   let membership = null;
   let canComment = false;
   let isCoordinator = false;
+  let canApply = false;
+  let application = null;
 
   if (user) {
     const { data: p } = await supabase
@@ -85,11 +81,37 @@ export default async function ForumPostPage({ params }) {
           .maybeSingle();
         membership = m;
         canComment = !!m;
+        canApply = !!m;
+      } else {
+        canApply = true;
       }
+    }
+
+    if (forumDetail?.allow_applications && canApply) {
+      const { data: app } = await supabase
+        .from("forum_applications")
+        .select("*")
+        .eq("post_id", postId)
+        .eq("user_id", profile.id)
+        .maybeSingle();
+      application = app;
     }
   }
 
   const forumAllowsComments = forumDetail?.allow_comments !== false;
+  const forumAllowsApplications = forumDetail?.allow_applications === true;
+  const requiresAuth = forum.visibility === "authenticated" && !user;
+
+  const { data: comments } = forumAllowsComments || forumAllowsApplications
+    ? await admin
+        .from("forum_comments")
+        .select("*, profiles(id, name)")
+        .eq("post_id", postId)
+        .order("created_at", { ascending: true })
+        .limit(50)
+    : { data: [] };
+
+  if (requiresAuth) notFound();
 
   return (
     <>
@@ -127,33 +149,33 @@ export default async function ForumPostPage({ params }) {
             </ForumCard>
 
             <div className="space-y-6">
-              <div className="flex items-center gap-3">
-                <div className="h-6 w-1 rounded-full bg-[#872075]" aria-hidden="true" />
-                <h2 className="text-xl font-extrabold text-gray-900 uppercase tracking-wide">
-                  Comentarios ({comments?.length || 0})
-                </h2>
-              </div>
-
-              {forumAllowsComments ? (
+              {forumAllowsApplications ? (
                 <>
-                  {canComment ? (
-                    <CommentForm postId={postId} />
+                  <div className="flex items-center gap-3">
+                    <div className="h-6 w-1 rounded-full bg-[#872075]" aria-hidden="true" />
+                    <h2 className="text-xl font-extrabold text-gray-900 uppercase tracking-wide">
+                      Postulaciones
+                    </h2>
+                  </div>
+
+                  {canApply ? (
+                    <ApplyForm postId={postId} existingApplication={application} />
                   ) : user ? (
                     membership?.status === "pending" ? (
                       <ForumCard className="p-6">
                         <div className="rounded-xl bg-amber-50 border border-amber-100 px-4 py-3">
                           <p className="text-sm text-amber-700">
-                            Tu solicitud de membresía está pendiente. Una vez aprobada podrás comentar.
+                            Tu solicitud de membresía está pendiente. Una vez aprobada podrás postular.
                           </p>
                         </div>
                       </ForumCard>
                     ) : (
                       <ForumCard className="p-6">
                         <h3 className="text-base font-extrabold text-gray-900 mb-2">
-                          Unirse al foro para comentar
+                          Unirse al foro para postular
                         </h3>
                         <p className="text-sm text-gray-600 mb-4">
-                          Debés ser miembro aprobado de este foro para dejar un comentario.
+                          Debés ser miembro aprobado de este foro para postular a las ofertas.
                         </p>
                         <JoinForumButton forumId={forum.id} />
                       </ForumCard>
@@ -161,10 +183,10 @@ export default async function ForumPostPage({ params }) {
                   ) : (
                     <ForumCard className="p-6">
                       <h3 className="text-base font-extrabold text-gray-900 mb-2">
-                        Iniciar sesión para comentar
+                        Iniciar sesión para postular
                       </h3>
                       <p className="text-sm text-gray-600 mb-4">
-                        Ingresá a tu cuenta para unirte al foro y participar en la conversación.
+                        Ingresa a tu cuenta para unirte al foro y postular a las ofertas.
                       </p>
                       <Link
                         href="/admin/login"
@@ -177,53 +199,108 @@ export default async function ForumPostPage({ params }) {
                   )}
                 </>
               ) : (
-                <ForumCard className="p-6">
-                  <div className="rounded-xl bg-blue-50 border border-blue-100 px-4 py-3">
-                    <p className="text-sm text-blue-700">
-                      <i className="fa-solid fa-circle-info mr-1" aria-hidden="true" />
-                      Este es un foro informativo. Solo el coordinador puede publicar.
-                    </p>
+                <>
+                  <div className="flex items-center gap-3">
+                    <div className="h-6 w-1 rounded-full bg-[#872075]" aria-hidden="true" />
+                    <h2 className="text-xl font-extrabold text-gray-900 uppercase tracking-wide">
+                      Comentarios ({comments?.length || 0})
+                    </h2>
                   </div>
-                </ForumCard>
+
+                  {forumAllowsComments ? (
+                    <>
+                      {canComment ? (
+                        <CommentForm postId={postId} />
+                      ) : user ? (
+                        membership?.status === "pending" ? (
+                          <ForumCard className="p-6">
+                            <div className="rounded-xl bg-amber-50 border border-amber-100 px-4 py-3">
+                              <p className="text-sm text-amber-700">
+                                Tu solicitud de membresía está pendiente. Una vez aprobada podrás comentar.
+                              </p>
+                            </div>
+                          </ForumCard>
+                        ) : (
+                          <ForumCard className="p-6">
+                            <h3 className="text-base font-extrabold text-gray-900 mb-2">
+                              Unirse al foro para comentar
+                            </h3>
+                            <p className="text-sm text-gray-600 mb-4">
+                              Debés ser miembro aprobado de este foro para dejar un comentario.
+                            </p>
+                            <JoinForumButton forumId={forum.id} />
+                          </ForumCard>
+                        )
+                      ) : (
+                        <ForumCard className="p-6">
+                          <h3 className="text-base font-extrabold text-gray-900 mb-2">
+                            Iniciar sesión para comentar
+                          </h3>
+                          <p className="text-sm text-gray-600 mb-4">
+                            Ingresá a tu cuenta para unirte al foro y participar en la conversación.
+                          </p>
+                          <Link
+                            href="/admin/login"
+                            className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#872075] px-4 py-2.5 text-sm font-bold text-white hover:bg-[#6f1a60] transition-colors"
+                          >
+                            <i className="fa-solid fa-circle-user text-sm" aria-hidden="true" />
+                            Iniciar sesión
+                          </Link>
+                        </ForumCard>
+                      )}
+                    </>
+                  ) : (
+                    <ForumCard className="p-6">
+                      <div className="rounded-xl bg-blue-50 border border-blue-100 px-4 py-3">
+                        <p className="text-sm text-blue-700">
+                          <i className="fa-solid fa-circle-info mr-1" aria-hidden="true" />
+                          Este es un foro informativo. Solo el coordinador puede publicar.
+                        </p>
+                      </div>
+                    </ForumCard>
+                  )}
+                </>
               )}
 
-              <div className="space-y-4">
-                {(comments ?? []).length === 0 ? (
-                  <ForumCard className="p-6 text-center">
-                    <i className="fa-solid fa-comments text-4xl text-gray-300 mb-3 block" aria-hidden="true" />
-                    <p className="text-sm text-gray-500">
-                      {forumAllowsComments ? "Aún no hay comentarios. Sé el primero." : "Aún no hay comentarios."}
-                    </p>
-                  </ForumCard>
-                ) : (
-                  (comments ?? []).map((comment) => (
-                    <ForumCard key={comment.id} className="p-6">
-                      <div className="flex items-center justify-between gap-3 mb-3">
-                        <div className="flex items-center gap-2">
-                          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#872075]/10 text-[#872075] text-xs font-bold">
-                            {(getRelFirst(comment.profiles)?.name || "A")[0].toUpperCase()}
-                          </div>
-                      <span className="text-sm font-bold text-[#872075]">
-                        {getRelFirst(comment.profiles)?.name || "Anónimo"}
-                      </span>
-                        </div>
-                        <span className="text-xs text-gray-400">
-                          {new Date(comment.created_at).toLocaleDateString("es-CO", {
-                            year: "numeric",
-                            month: "short",
-                            day: "numeric",
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
-                        </span>
-                      </div>
-                      <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">
-                        {comment.content}
+              {!forumAllowsApplications && (
+                <div className="space-y-4">
+                  {(comments ?? []).length === 0 ? (
+                    <ForumCard className="p-6 text-center">
+                      <i className="fa-solid fa-comments text-4xl text-gray-300 mb-3 block" aria-hidden="true" />
+                      <p className="text-sm text-gray-500">
+                        {forumAllowsComments ? "Aún no hay comentarios. Sé el primero." : "Aún no hay comentarios."}
                       </p>
                     </ForumCard>
-                  ))
-                )}
-              </div>
+                  ) : (
+                    (comments ?? []).map((comment) => (
+                      <ForumCard key={comment.id} className="p-6">
+                        <div className="flex items-center justify-between gap-3 mb-3">
+                          <div className="flex items-center gap-2">
+                            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#872075]/10 text-[#872075] text-xs font-bold">
+                              {(getRelFirst(comment.profiles)?.name || "A")[0].toUpperCase()}
+                            </div>
+                          <span className="text-sm font-bold text-[#872075]">
+                            {getRelFirst(comment.profiles)?.name || "Anónimo"}
+                          </span>
+                          </div>
+                          <span className="text-xs text-gray-400">
+                            {new Date(comment.created_at).toLocaleDateString("es-CO", {
+                              year: "numeric",
+                              month: "short",
+                              day: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </span>
+                        </div>
+                        <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">
+                          {comment.content}
+                        </p>
+                      </ForumCard>
+                    ))
+                  )}
+                </div>
+              )}
             </div>
           </div>
 

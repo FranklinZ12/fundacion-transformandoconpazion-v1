@@ -14,6 +14,9 @@ create table if not exists public.forums (
   coordinator_id uuid references public.profiles(id) on delete set null,
   is_active   boolean not null default true,
   allow_comments boolean not null default true,
+  visibility  text not null default 'public'
+              check (visibility in ('public','authenticated')),
+  allow_applications boolean not null default false,
   created_at  timestamptz not null default now(),
   updated_at  timestamptz not null default now()
 );
@@ -26,6 +29,28 @@ begin
     where table_name = 'forums' and column_name = 'allow_comments'
   ) then
     alter table public.forums add column allow_comments boolean not null default true;
+  end if;
+end $$;
+
+-- Migracion: agregar columna visibility si no existe
+do $$
+begin
+  if not exists (
+    select 1 from information_schema.columns
+    where table_name = 'forums' and column_name = 'visibility'
+  ) then
+    alter table public.forums add column visibility text not null default 'public';
+  end if;
+end $$;
+
+-- Migracion: agregar columna allow_applications si no existe
+do $$
+begin
+  if not exists (
+    select 1 from information_schema.columns
+    where table_name = 'forums' and column_name = 'allow_applications'
+  ) then
+    alter table public.forums add column allow_applications boolean not null default false;
   end if;
 end $$;
 
@@ -64,18 +89,33 @@ create table if not exists public.forum_comments (
   updated_at timestamptz not null default now()
 );
 
+-- 5. Postulaciones a ofertas (ej: empleo)
+create table if not exists public.forum_applications (
+  id         uuid primary key default gen_random_uuid(),
+  post_id    uuid not null references public.forum_posts(id) on delete cascade,
+  user_id    uuid not null references public.profiles(id) on delete cascade,
+  message    text,
+  status     text not null default 'pending'
+               check (status in ('pending','reviewed','contacted','cancelled')),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique(post_id, user_id)
+);
+
 -- Indices
 create index if not exists idx_forum_members_forum_user on public.forum_members(forum_id, user_id);
 create index if not exists idx_forum_members_status on public.forum_members(forum_id, status);
 create index if not exists idx_forum_posts_forum on public.forum_posts(forum_id, is_pinned, created_at desc);
 create index if not exists idx_forum_comments_post on public.forum_comments(post_id, created_at desc);
+create index if not exists idx_forum_applications_post on public.forum_applications(post_id, created_at desc);
+create index if not exists idx_forum_applications_user on public.forum_applications(user_id, created_at desc);
 
 -- Habilitar RLS
 alter table public.forums enable row level security;
 alter table public.forum_members enable row level security;
 alter table public.forum_posts enable row level security;
 alter table public.forum_comments enable row level security;
-
+alter table public.forum_applications enable row level security;
 -- Funciones de ayuda
 
 create or replace function public.forum_is_admin()
@@ -150,3 +190,17 @@ drop policy if exists forum_comments_select_public on public.forum_comments;
 create policy forum_comments_select_public
   on public.forum_comments for select
   using (true);
+
+-- forum_applications: lectura solo para el propio usuario, admin, o coordinador
+
+drop policy if exists forum_applications_select on public.forum_applications;
+create policy forum_applications_select
+  on public.forum_applications for select
+  to authenticated
+  using (
+    user_id = auth.uid()
+    or public.forum_is_admin()
+    or public.forum_is_coordinator(
+      (select forum_id from public.forum_posts where id = post_id)
+    )
+  );

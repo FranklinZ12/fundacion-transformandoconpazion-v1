@@ -15,8 +15,11 @@ export default function MobileMenu({ links, pathname }) {
 
   // Close drawer on route change
   useEffect(() => {
-    setOpen(false);
-    setExpanded(null);
+    const raf = requestAnimationFrame(() => {
+      setOpen(false);
+      setExpanded(null);
+    });
+    return () => cancelAnimationFrame(raf);
   }, [pathname]);
 
   // Prevent body scroll when open

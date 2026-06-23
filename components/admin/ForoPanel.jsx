@@ -12,11 +12,13 @@ import {
   deletePost,
   updateMembershipStatus,
   removeMembership,
+  updateApplicationStatus,
 } from "@/app/foro/actions";
 
 const TABS = [
   { id: "posts", label: "Posts", icon: "fa-newspaper" },
   { id: "miembros", label: "Miembros", icon: "fa-users" },
+  { id: "postulaciones", label: "Postulaciones", icon: "fa-file-signature" },
   { id: "config", label: "Configuración", icon: "fa-gear" },
 ];
 
@@ -36,7 +38,14 @@ const STATUS_LABELS = {
   rejected: "Rechazado",
 };
 
-export default function ForoPanel({ profile, forums, posts, memberships, users }) {
+const APP_STATUS_LABELS = {
+  pending: "Pendiente",
+  reviewed: "Revisada",
+  contacted: "Contactado",
+  cancelled: "Cancelada",
+};
+
+export default function ForoPanel({ profile, forums, posts, memberships, applications, users }) {
   const isAdmin = profile.role === "administrador";
   const router = useRouter();
   const [selectedForumId, setSelectedForumId] = useState(forums[0]?.id || "");
@@ -58,6 +67,15 @@ export default function ForoPanel({ profile, forums, posts, memberships, users }
   const forumMemberships = useMemo(
     () => memberships.filter((m) => m.forum_id === selectedForum?.id),
     [memberships, selectedForum]
+  );
+
+  const forumApplications = useMemo(
+    () =>
+      (applications ?? []).filter((a) => {
+        const post = Array.isArray(a.forum_posts) ? a.forum_posts[0] : a.forum_posts;
+        return post?.forum_id === selectedForum?.id;
+      }),
+    [applications, selectedForum]
   );
 
   function showMessage(type, text) {
@@ -130,6 +148,19 @@ export default function ForoPanel({ profile, forums, posts, memberships, users }
       return;
     }
     showMessage("ok", "Foro eliminado.");
+    router.refresh();
+  }
+
+  async function handleAppStatus(applicationId, status) {
+    const formData = new FormData();
+    formData.set("application_id", applicationId);
+    formData.set("status", status);
+    const result = await updateApplicationStatus(formData);
+    if (result?.error) {
+      showMessage("error", result.error);
+      return;
+    }
+    showMessage("ok", "Estado actualizado.");
     router.refresh();
   }
 
@@ -307,6 +338,14 @@ export default function ForoPanel({ profile, forums, posts, memberships, users }
                 />
               )}
 
+              {activeTab === "postulaciones" && (
+                <PostulacionesTab
+                  forumSlug={selectedForum?.slug}
+                  applications={forumApplications}
+                  onUpdateStatus={handleAppStatus}
+                />
+              )}
+
               {activeTab === "config" && isAdmin && (
                 <ConfigTab
                   forum={selectedForum}
@@ -391,6 +430,14 @@ function CreateForumForm({ users, action, onSuccess }) {
           </option>
         ))}
       </select>
+      <select
+        name="visibility"
+        defaultValue="public"
+        className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm"
+      >
+        <option value="public">Visible para todos</option>
+        <option value="authenticated">Solo usuarios logueados</option>
+      </select>
       <label className="flex items-center gap-2 px-3 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-700">
         <input
           type="checkbox"
@@ -399,6 +446,14 @@ function CreateForumForm({ users, action, onSuccess }) {
           defaultChecked
         />
         Permitir comentarios de miembros
+      </label>
+      <label className="flex items-center gap-2 px-3 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-700">
+        <input
+          type="checkbox"
+          name="allow_applications"
+          value="true"
+        />
+        Permitir postulaciones (ofertas de empleo)
       </label>
       <button
         disabled={isPending}
@@ -652,6 +707,97 @@ function MiembrosTab({ memberships, onApprove, onReject, onRemove }) {
   );
 }
 
+function PostulacionesTab({ forumSlug, applications, onUpdateStatus }) {
+  if (!applications || applications.length === 0) {
+    return (
+      <section className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+        <h3 className="text-lg font-extrabold text-gray-800 mb-2">Postulaciones</h3>
+        <p className="text-sm text-gray-500">Aún no hay postulaciones en este foro.</p>
+      </section>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      {applications.map((app) => {
+        const post = Array.isArray(app.forum_posts) ? app.forum_posts[0] : app.forum_posts;
+        const profile = Array.isArray(app.profiles) ? app.profiles[0] : app.profiles;
+        return (
+          <div
+            key={app.id}
+            className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm space-y-3"
+          >
+            <div className="flex items-start justify-between gap-4">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#872075]/10 text-[#872075] text-xs font-bold">
+                    {(profile?.name || "A")[0].toUpperCase()}
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-gray-800">{profile?.name || "Desconocido"}</p>
+                    <p className="text-xs text-gray-500">Postulante</p>
+                  </div>
+                </div>
+                <p className="text-sm text-gray-700">
+                  <span className="font-semibold">Oferta:</span>{" "}
+                  <Link
+                    href={`/foro/${forumSlug}/post/${app.post_id}`}
+                    className="text-[#872075] hover:underline"
+                  >
+                    {post?.title || "Oferta"}
+                  </Link>
+                </p>
+                <p className="text-xs text-gray-500">
+                  Postuló el {new Date(app.created_at).toLocaleDateString("es-CO", {
+                    year: "numeric",
+                    month: "short",
+                    day: "numeric",
+                  })}
+                </p>
+                {app.message && (
+                  <div className="mt-2 rounded-xl bg-gray-50 border border-gray-100 px-3 py-2">
+                    <p className="text-xs text-gray-600 whitespace-pre-wrap">{app.message}</p>
+                  </div>
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                <span
+                  className={`text-xs font-bold px-2.5 py-1 rounded-full ${
+                    app.status === "pending"
+                      ? "bg-amber-50 text-amber-700"
+                      : app.status === "reviewed"
+                      ? "bg-blue-50 text-blue-700"
+                      : app.status === "contacted"
+                      ? "bg-green-50 text-green-700"
+                      : "bg-gray-100 text-gray-500"
+                  }`}
+                >
+                  {APP_STATUS_LABELS[app.status] || app.status}
+                </span>
+                {app.status !== "cancelled" && (
+                  <select
+                    value={app.status}
+                    onChange={(e) => {
+                      if (e.target.value !== app.status) {
+                        onUpdateStatus(app.id, e.target.value);
+                      }
+                    }}
+                    className="rounded-lg border border-gray-200 px-2 py-1 text-xs font-semibold"
+                  >
+                    <option value="pending">Pendiente</option>
+                    <option value="reviewed">Revisada</option>
+                    <option value="contacted">Contactado</option>
+                  </select>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 function ConfigTab({ forum, users, isPending, onUpdate, onDelete }) {
   return (
     <div className="space-y-6">
@@ -691,6 +837,14 @@ function ConfigTab({ forum, users, isPending, onUpdate, onDelete }) {
               </option>
             ))}
           </select>
+          <select
+            name="visibility"
+            defaultValue={forum.visibility || "public"}
+            className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm"
+          >
+            <option value="public">Visible para todos</option>
+            <option value="authenticated">Solo usuarios logueados</option>
+          </select>
           <label className="flex items-center gap-2 px-3 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-700">
             <input
               type="checkbox"
@@ -708,6 +862,15 @@ function ConfigTab({ forum, users, isPending, onUpdate, onDelete }) {
               defaultChecked={forum.allow_comments !== false}
             />
             Permitir comentarios de miembros
+          </label>
+          <label className="flex items-center gap-2 px-3 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-700">
+            <input
+              type="checkbox"
+              name="allow_applications"
+              value="true"
+              defaultChecked={forum.allow_applications === true}
+            />
+            Permitir postulaciones (ofertas de empleo)
           </label>
           <button
             disabled={isPending}

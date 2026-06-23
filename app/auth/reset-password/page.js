@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
 
 export default function ResetPasswordPage() {
@@ -11,21 +11,15 @@ export default function ResetPasswordPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
-  const [linkError, setLinkError] = useState(null);
 
-  useEffect(() => {
+  const linkError = useMemo(() => {
+    if (typeof window === "undefined") return null;
     const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ""));
     const errorCode = hashParams.get("error_code");
-
-    if (errorCode === "otp_expired") {
-      setLinkError("El enlace expiró. Solicita uno nuevo.");
-      return;
-    }
-
+    if (errorCode === "otp_expired") return "El enlace expiró. Solicita uno nuevo.";
     const errorDescription = hashParams.get("error_description");
-    if (errorDescription) {
-      setLinkError("El enlace es inválido. Solicita uno nuevo.");
-    }
+    if (errorDescription) return "El enlace es inválido. Solicita uno nuevo.";
+    return null;
   }, []);
 
   async function handleSubmit(e) {

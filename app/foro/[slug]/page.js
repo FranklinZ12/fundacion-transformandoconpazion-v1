@@ -83,67 +83,86 @@ export default async function ForumPublicPage({ params }) {
       <ForumPageLayout backHref="/foro" backLabel="Volver a foros">
         <div className="grid lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-6">
-            <ForumSectionTitle
-              title="Publicaciones"
-              subtitle={isCoordinator ? "Podés crear anuncios y debates" : "Novedades del foro"}
-            />
-
-            {isCoordinator && <NewPostForm forumId={forum.id} slug={forum.slug} />}
-
-            {(posts ?? []).length === 0 ? (
+            {forum.visibility === "authenticated" && !user ? (
               <ForumCard className="p-8 text-center">
-                <i className="fa-solid fa-newspaper text-4xl text-gray-300 mb-4 block" aria-hidden="true" />
-                <p className="text-gray-500">Este foro aún no tiene publicaciones.</p>
+                <i className="fa-solid fa-lock text-4xl text-gray-300 mb-4 block" aria-hidden="true" />
+                <h3 className="text-lg font-extrabold text-gray-800 mb-2">Contenido exclusivo</h3>
+                <p className="text-gray-500 mb-6">
+                  Inicia sesión con tu cuenta aprobada para ver las publicaciones de este foro.
+                </p>
+                <Link
+                  href="/admin/login"
+                  className="inline-flex items-center gap-2 rounded-xl bg-[#872075] px-5 py-2.5 text-sm font-bold text-white hover:bg-[#6f1a60] transition-colors"
+                >
+                  <i className="fa-solid fa-circle-user text-sm" aria-hidden="true" />
+                  Iniciar sesión
+                </Link>
               </ForumCard>
             ) : (
-              <div className="space-y-4">
-                {(posts ?? []).map((post) => (
-                  <article
-                    key={post.id}
-                    className={`rounded-2xl border p-6 transition-all hover:shadow-md ${
-                      post.is_pinned
-                        ? "border-[#872075]/20 bg-[#872075]/5"
-                        : "border-gray-100 bg-white shadow-sm"
-                    }`}
-                  >
-                    <div className="flex items-center gap-2 mb-3">
-                      <span className="text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">
-                        {TYPE_LABELS[post.type] || post.type}
-                      </span>
-                      {post.is_pinned && (
-                        <span className="text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full bg-[#872075]/10 text-[#872075]">
-                          Fijado
-                        </span>
-                      )}
-                    </div>
-                    <h2 className="text-lg font-extrabold text-gray-900 mb-2">
-                      <Link
-                        href={`/foro/${forum.slug}/post/${post.id}`}
-                        className="hover:text-[#872075] transition-colors"
+              <>
+                <ForumSectionTitle
+                  title="Publicaciones"
+                  subtitle={isCoordinator ? "Podés crear anuncios y debates" : "Novedades del foro"}
+                />
+
+                {isCoordinator && <NewPostForm forumId={forum.id} slug={forum.slug} />}
+
+                {(posts ?? []).length === 0 ? (
+                  <ForumCard className="p-8 text-center">
+                    <i className="fa-solid fa-newspaper text-4xl text-gray-300 mb-4 block" aria-hidden="true" />
+                    <p className="text-gray-500">Este foro aún no tiene publicaciones.</p>
+                  </ForumCard>
+                ) : (
+                  <div className="space-y-4">
+                    {(posts ?? []).map((post) => (
+                      <article
+                        key={post.id}
+                        className={`rounded-2xl border p-6 transition-all hover:shadow-md ${
+                          post.is_pinned
+                            ? "border-[#872075]/20 bg-[#872075]/5"
+                            : "border-gray-100 bg-white shadow-sm"
+                        }`}
                       >
-                        {post.title}
-                      </Link>
-                    </h2>
-                    <p className="text-sm text-gray-600 leading-relaxed line-clamp-3">
-                      {post.content}
-                    </p>
-                    <div className="mt-4 flex items-center justify-between text-xs text-gray-400">
-                      <span>
-                        Por {getRelFirst(post.profiles)?.name || "Anónimo"} ·{" "}
-                        {new Date(post.created_at).toLocaleDateString("es-CO", {
-                          year: "numeric",
-                          month: "short",
-                          day: "numeric",
-                        })}
-                      </span>
-                      <span className="inline-flex items-center gap-1">
-                        <i className="fa-solid fa-comment text-[10px]" aria-hidden="true" />
-                        {Array.isArray(post.forum_comments) ? post.forum_comments.length : 0}
-                      </span>
-                    </div>
-                  </article>
-                ))}
-              </div>
+                        <div className="flex items-center gap-2 mb-3">
+                          <span className="text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">
+                            {TYPE_LABELS[post.type] || post.type}
+                          </span>
+                          {post.is_pinned && (
+                            <span className="text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full bg-[#872075]/10 text-[#872075]">
+                              Fijado
+                            </span>
+                          )}
+                        </div>
+                        <h2 className="text-lg font-extrabold text-gray-900 mb-2">
+                          <Link
+                            href={`/foro/${forum.slug}/post/${post.id}`}
+                            className="hover:text-[#872075] transition-colors"
+                          >
+                            {post.title}
+                          </Link>
+                        </h2>
+                        <p className="text-sm text-gray-600 leading-relaxed line-clamp-3">
+                          {post.content}
+                        </p>
+                        <div className="mt-4 flex items-center justify-between text-xs text-gray-400">
+                          <span>
+                            Por {getRelFirst(post.profiles)?.name || "Anónimo"} ·{" "}
+                            {new Date(post.created_at).toLocaleDateString("es-CO", {
+                              year: "numeric",
+                              month: "short",
+                              day: "numeric",
+                            })}
+                          </span>
+                          <span className="inline-flex items-center gap-1">
+                            <i className="fa-solid fa-comment text-[10px]" aria-hidden="true" />
+                            {Array.isArray(post.forum_comments) ? post.forum_comments.length : 0}
+                          </span>
+                        </div>
+                      </article>
+                    ))}
+                  </div>
+                )}
+              </>
             )}
           </div>
 
@@ -166,7 +185,7 @@ export default async function ForumPublicPage({ params }) {
               </div>
             </ForumCard>
 
-            {!forum.allow_comments && (
+            {!forum.allow_comments && !forum.allow_applications && (
               <ForumCard className="p-6">
                 <div className="rounded-xl bg-blue-50 border border-blue-100 px-4 py-3">
                   <p className="text-sm text-blue-700">
@@ -177,11 +196,11 @@ export default async function ForumPublicPage({ params }) {
               </ForumCard>
             )}
 
-            {forum.allow_comments && !user && (
+            {(forum.allow_comments || forum.allow_applications) && !user && (
               <ForumCard className="p-6">
                 <h3 className="text-base font-extrabold text-gray-900 mb-3">¿Querés participar?</h3>
                 <p className="text-sm text-gray-600 mb-4">
-                  Iniciá sesión para unirte al foro y comentar en las publicaciones.
+                  Iniciá sesión para unirte al foro{forum.allow_applications ? " y postular a las ofertas" : " y comentar en las publicaciones"}.
                 </p>
                 <Link
                   href="/admin/login"
@@ -193,14 +212,14 @@ export default async function ForumPublicPage({ params }) {
               </ForumCard>
             )}
 
-            {forum.allow_comments && user && profile?.status === "approved" && !isCoordinator && (
+            {(forum.allow_comments || forum.allow_applications) && user && profile?.status === "approved" && !isCoordinator && (
               <ForumCard className="p-6">
                 <h3 className="text-base font-extrabold text-gray-900 mb-3">Tu membresía</h3>
                 {membership?.status === "approved" ? (
                   <div className="rounded-xl bg-green-50 border border-green-100 px-4 py-3">
                     <p className="text-sm text-green-700">
                       <i className="fa-solid fa-check-circle mr-1" aria-hidden="true" />
-                      Sos miembro de este foro. Podés comentar.
+                      {forum.allow_applications ? "Sos miembro de este foro. Podés postular a las ofertas." : "Sos miembro de este foro. Podés comentar."}
                     </p>
                   </div>
                 ) : membership?.status === "pending" ? (
@@ -215,7 +234,7 @@ export default async function ForumPublicPage({ params }) {
               </ForumCard>
             )}
 
-            {forum.allow_comments && user && profile?.status !== "approved" && (
+            {(forum.allow_comments || forum.allow_applications) && user && profile?.status !== "approved" && (
               <ForumCard className="p-6">
                 <div className="rounded-xl bg-amber-50 border border-amber-100 px-4 py-3">
                   <p className="text-sm text-amber-700">

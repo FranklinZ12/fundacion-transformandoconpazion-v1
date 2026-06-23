@@ -49,7 +49,7 @@ export default async function ForoAdminPage() {
 
   const forumIds = accessibleForums.map((f) => f.id);
 
-  const [{ data: posts }, { data: memberships }] = await Promise.all([
+  const [{ data: posts }, { data: memberships }, { data: applications }] = await Promise.all([
     forumIds.length > 0
       ? admin
           .from("forum_posts")
@@ -59,6 +59,12 @@ export default async function ForoAdminPage() {
           .order("created_at", { ascending: false })
       : { data: [] },
     admin.from("forum_members").select("*").limit(500),
+    forumIds.length > 0
+      ? admin
+          .from("forum_applications")
+          .select("*, profiles(id, name), forum_posts(id, title, forum_id)")
+          .limit(1000)
+      : { data: [] },
   ]);
 
   return (
@@ -67,6 +73,7 @@ export default async function ForoAdminPage() {
       forums={accessibleForums}
       posts={posts ?? []}
       memberships={memberships ?? []}
+      applications={applications ?? []}
       users={users ?? []}
     />
   );

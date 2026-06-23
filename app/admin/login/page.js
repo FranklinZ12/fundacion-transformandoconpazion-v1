@@ -1,4 +1,5 @@
 import LoginForm from "@/components/admin/LoginForm";
+import Link from "next/link";
 
 export const metadata = { title: "Iniciar sesión" };
 
@@ -11,13 +12,13 @@ export default async function LoginPage({ searchParams }) {
       <div className="w-full max-w-md space-y-8">
 
         {/* Volver al sitio */}
-        <a
+        <Link
           href="/"
           className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-[#872075] transition-colors"
         >
           <i className="fa-solid fa-arrow-left text-xs" aria-hidden="true" />
           Volver al sitio
-        </a>
+        </Link>
 
         {/* Header */}
         <div className="text-center">
@@ -42,9 +43,9 @@ export default async function LoginPage({ searchParams }) {
 
         <p className="text-center text-xs text-gray-400">
           ¿No tienes acceso?{" "}
-          <a href="/admin/register" className="text-[#872075] font-semibold hover:underline">
+          <Link href="/admin/register" className="text-[#872075] font-semibold hover:underline">
             Solicitar acceso
-          </a>
+          </Link>
         </p>
       </div>
     </div>

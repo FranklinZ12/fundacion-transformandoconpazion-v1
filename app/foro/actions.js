@@ -65,6 +65,8 @@ export async function createForum(formData) {
   const description = formData.get("description")?.toString().trim() || null;
   const coordinatorId = formData.get("coordinator_id")?.toString() || null;
   const allowComments = formData.get("allow_comments") === "true";
+  const visibility = formData.get("visibility")?.toString() || "public";
+  const allowApplications = formData.get("allow_applications") === "true";
 
   if (!slug || !name) return { error: "Slug y nombre son requeridos." };
   if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
@@ -90,6 +92,8 @@ export async function createForum(formData) {
     description,
     coordinator_id: coordinatorId || null,
     allow_comments: allowComments,
+    visibility,
+    allow_applications: allowApplications,
   });
 
   if (error) {
@@ -114,6 +118,8 @@ export async function updateForum(formData) {
   const coordinatorId = formData.get("coordinator_id")?.toString() || null;
   const isActive = formData.get("is_active") === "true";
   const allowComments = formData.get("allow_comments") === "true";
+  const visibility = formData.get("visibility")?.toString() || "public";
+  const allowApplications = formData.get("allow_applications") === "true";
 
   if (!name) return { error: "Nombre requerido." };
 
@@ -132,7 +138,7 @@ export async function updateForum(formData) {
 
   const { error } = await admin
     .from("forums")
-    .update({ name, description, coordinator_id: coordinatorId || null, is_active: isActive, allow_comments: allowComments })
+    .update({ name, description, coordinator_id: coordinatorId || null, is_active: isActive, allow_comments: allowComments, visibility, allow_applications: allowApplications })
     .eq("id", forumId);
 
   if (error) return { error: error.message || "No se pudo actualizar el foro." };
@@ -301,11 +307,11 @@ export async function requestMembership(forumId) {
 
   const { data: forum } = await admin
     .from("forums")
-    .select("id, allow_comments")
+    .select("id, allow_comments, allow_applications")
     .eq("id", forumId)
     .single();
 
-  if (!forum?.allow_comments) return { error: "Este foro es informativo, no se aceptan miembros." };
+  if (!forum?.allow_comments && !forum?.allow_applications) return { error: "Este foro es informativo, no se aceptan miembros." };
 
   const { data: existing } = await admin
     .from("forum_members")
@@ -488,5 +494,129 @@ export async function deleteComment(formData) {
   revalidatePath("/foro");
   revalidatePath(`/foro/${slug}/post/${comment.post_id}`);
   revalidatePath(`/foro/${slug}`);
+  return { success: true };
+}
+
+// ─────────────────────────────────────────────────────────
+// POSTULACIONES (ofertas de empleo, etc.)
+// ─────────────────────────────────────────────────────────
+
+export async function createApplication(formData) {
+  const caller = await getCaller();
+  const postId = formData.get("post_id")?.toString();
+  const message = formData.get("message")?.toString().trim() || null;
+
+  if (!caller || caller.status !== "approved") return { error: "Debes iniciar sesion para postular." };
+  if (!postId) return { error: "Oferta requerida." };
+
+  const admin = createAdminClient();
+  const { data: post } = await admin
+    .from("forum_posts")
+    .select("id, forum_id, forums(slug, allow_applications)")
+    .eq("id", postId)
+    .single();
+
+  if (!post) return { error: "Oferta no encontrada." };
+
+  const forumData = Array.isArray(post.forums) ? post.forums[0] : post.forums;
+  if (!forumData?.allow_applications) return { error: "Este foro no acepta postulaciones." };
+
+  const isMember = await isForumMember(caller, post.forum_id);
+  if (!isMember) return { error: "Debes ser miembro del foro para postular." };
+
+  const { data: existing } = await admin
+    .from("forum_applications")
+    .select("id, status")
+    .eq("post_id", postId)
+    .eq("user_id", caller.id)
+    .maybeSingle();
+
+  if (existing) {
+    if (existing.status === "cancelled") {
+      await admin
+        .from("forum_applications")
+        .update({ status: "pending", message, updated_at: new Date().toISOString() })
+        .eq("id", existing.id);
+      revalidatePath(`/foro/${forumData.slug}/post/${postId}`);
+      revalidatePath("/admin/mis-postulaciones");
+      revalidatePath("/admin/foro");
+      return { success: true };
+    }
+    return { error: "Ya te postulaste a esta oferta." };
+  }
+
+  const { error } = await admin.from("forum_applications").insert({
+    post_id: postId,
+    user_id: caller.id,
+    message,
+  });
+
+  if (error) return { error: error.message || "No se pudo enviar la postulacion." };
+
+  revalidatePath(`/foro/${forumData.slug}/post/${postId}`);
+  revalidatePath("/admin/mis-postulaciones");
+  revalidatePath("/admin/foro");
+  return { success: true };
+}
+
+export async function cancelApplication(applicationId) {
+  const caller = await getCaller();
+  if (!caller || caller.status !== "approved") return { error: "Debes iniciar sesion." };
+  if (!applicationId) return { error: "Postulacion requerida." };
+
+  const admin = createAdminClient();
+  const { data: app } = await admin
+    .from("forum_applications")
+    .select("id, user_id, post_id, status")
+    .eq("id", applicationId)
+    .single();
+
+  if (!app) return { error: "Postulacion no encontrada." };
+  if (app.user_id !== caller.id) return { error: "Sin permisos." };
+  if (!["pending", "reviewed"].includes(app.status)) return { error: "No se puede cancelar esta postulacion." };
+
+  const { error } = await admin
+    .from("forum_applications")
+    .update({ status: "cancelled", updated_at: new Date().toISOString() })
+    .eq("id", applicationId);
+
+  if (error) return { error: error.message || "No se pudo cancelar la postulacion." };
+
+  revalidatePath("/admin/mis-postulaciones");
+  revalidatePath("/admin/foro");
+  return { success: true };
+}
+
+export async function updateApplicationStatus(formData) {
+  const caller = await getCaller();
+  const applicationId = formData.get("application_id")?.toString();
+  const status = formData.get("status")?.toString();
+
+  if (!caller || caller.status !== "approved") return { error: "Debes iniciar sesion." };
+  if (!applicationId || !["reviewed", "contacted"].includes(status)) {
+    return { error: "Estado invalido." };
+  }
+
+  const admin = createAdminClient();
+  const { data: app } = await admin
+    .from("forum_applications")
+    .select("id, post_id, forum_posts(forum_id)")
+    .eq("id", applicationId)
+    .single();
+
+  if (!app) return { error: "Postulacion no encontrada." };
+
+  const forumId = Array.isArray(app.forum_posts) ? app.forum_posts[0]?.forum_id : app.forum_posts?.forum_id;
+  const canManage = await canManageForum(caller, forumId);
+  if (!canManage) return { error: "Sin permisos." };
+
+  const { error } = await admin
+    .from("forum_applications")
+    .update({ status, updated_at: new Date().toISOString() })
+    .eq("id", applicationId);
+
+  if (error) return { error: error.message || "No se pudo actualizar el estado." };
+
+  revalidatePath("/admin/foro");
   return { success: true };
 }

@@ -13,6 +13,8 @@ export async function updateUserProfile(formData) {
     }
 
     const name = formData.get("name");
+    const phoneNumber = formData.get("phone_number");
+    const address = formData.get("address");
     const avatar = formData.get("avatar");
     const adminClient = createAdminClient();
 
@@ -32,7 +34,7 @@ export async function updateUserProfile(formData) {
       avatarUrl = data.publicUrl;
     }
 
-    const updateData = { name };
+    const updateData = { name, phone_number: phoneNumber?.toString().trim() || null, address: address?.toString().trim() || null };
     if (avatarUrl) updateData.avatar_url = avatarUrl;
 
     const { error } = await adminClient

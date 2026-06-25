@@ -87,7 +87,7 @@ export default function ClubDeportivoPanel({
         </p>
       </div>
 
-      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
         <Card title="Categorias visibles" value={scopeCategories.length} />
         <Card title="Deportistas" value={athletes.length} />
         <Card title="Proximos partidos" value={matches.length} />
@@ -283,7 +283,7 @@ function ConsultorView({ profile, athlete, trainings, matches, financeRows, late
   const debtCount = financeRows.filter((r) => r.status === "deuda").length;
 
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col gap-10">
       <section className="rounded-3xl border border-sky-100 bg-gradient-to-r from-sky-50 to-indigo-50 p-6 shadow-sm">
         <p className="text-xs uppercase tracking-wide text-sky-600 font-bold">Vista del consultor</p>
         <h1 className="mt-1 text-2xl font-extrabold text-slate-800">Tu panel deportivo</h1>
@@ -292,7 +292,7 @@ function ConsultorView({ profile, athlete, trainings, matches, financeRows, late
         </p>
       </section>
 
-      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
         <Card title="Tu categoria" value={categoryName(athlete?.sports_categories)} />
         <Card title="Entrenamientos" value={trainings.length} />
         <Card title="Partidos proximos" value={matches.length} />
@@ -302,7 +302,7 @@ function ConsultorView({ profile, athlete, trainings, matches, financeRows, late
       <section className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
         <h2 className="text-lg font-extrabold text-gray-800 mb-4">Tu ficha de deportista</h2>
         {athlete ? (
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <InfoPill label="Nombre" value={athlete.full_name || "-"} />
             <InfoPill label="Categoria" value={categoryName(athlete.sports_categories)} />
             <InfoPill label="Talla" value={athlete.height_cm ? `${athlete.height_cm} cm` : "-"} />

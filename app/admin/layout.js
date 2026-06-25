@@ -33,7 +33,7 @@ export default async function AdminLayout({ children }) {
   return (
     <div className="min-h-screen bg-gray-50 flex">
       <AdminSidebar profile={profile} />
-      <main className="flex-1 p-6 md:p-10 overflow-auto">
+      <main className="flex-1 p-6 pt-16 md:p-10 overflow-auto">
         {children}
       </main>
     </div>

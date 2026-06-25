@@ -62,7 +62,7 @@ export default async function ForoAdminPage() {
     forumIds.length > 0
       ? admin
           .from("forum_applications")
-          .select("*, profiles(id, name), forum_posts(id, title, forum_id)")
+          .select("*, profiles(id, name, phone_number, address), forum_posts(id, title, forum_id)")
           .limit(1000)
       : { data: [] },
   ]);

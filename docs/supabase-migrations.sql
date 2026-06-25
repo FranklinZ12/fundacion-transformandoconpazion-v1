@@ -125,7 +125,28 @@ create or replace trigger on_auth_user_created
 
 
 -- ────────────────────────────────────────────────────────────
--- 6. STORAGE: bucket para imágenes del sitio
+-- 6. MIGRACIÓN: agregar phone_number y address a profiles
+-- ────────────────────────────────────────────────────────────
+
+do $$
+begin
+  if not exists (
+    select 1 from information_schema.columns
+    where table_name = 'profiles' and column_name = 'phone_number'
+  ) then
+    alter table public.profiles add column phone_number text;
+  end if;
+
+  if not exists (
+    select 1 from information_schema.columns
+    where table_name = 'profiles' and column_name = 'address'
+  ) then
+    alter table public.profiles add column address text;
+  end if;
+end $$;
+
+-- ────────────────────────────────────────────────────────────
+-- 7. STORAGE: bucket para imágenes del sitio
 -- ────────────────────────────────────────────────────────────
 
 -- Crear en Supabase Dashboard → Storage → New bucket

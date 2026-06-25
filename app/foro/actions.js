@@ -11,7 +11,7 @@ async function getCaller() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("id, name, role, status")
+    .select("id, name, role, status, phone_number, address")
     .eq("id", user.id)
     .single();
 
@@ -509,6 +509,10 @@ export async function createApplication(formData) {
   if (!caller || caller.status !== "approved") return { error: "Debes iniciar sesion para postular." };
   if (!postId) return { error: "Oferta requerida." };
 
+  if (!caller.phone_number || !caller.address) {
+    return { error: "Debes completar tu perfil con teléfono y dirección antes de postular.", profileIncomplete: true };
+  }
+
   const admin = createAdminClient();
   const { data: post } = await admin
     .from("forum_posts")
@@ -522,7 +526,11 @@ export async function createApplication(formData) {
   if (!forumData?.allow_applications) return { error: "Este foro no acepta postulaciones." };
 
   const isMember = await isForumMember(caller, post.forum_id);
-  if (!isMember) return { error: "Debes ser miembro del foro para postular." };
+  const canManage = await canManageForum(caller, post.forum_id);
+
+  if (!isMember && !canManage) {
+    return { error: "Debes ser miembro del foro para postular." };
+  }
 
   const { data: existing } = await admin
     .from("forum_applications")
@@ -533,30 +541,33 @@ export async function createApplication(formData) {
 
   if (existing) {
     if (existing.status === "cancelled") {
-      await admin
+      const { error: reactError } = await admin
         .from("forum_applications")
         .update({ status: "pending", message, updated_at: new Date().toISOString() })
         .eq("id", existing.id);
+
+      if (reactError) return { error: reactError.message || "No se pudo reenviar la postulación." };
+
       revalidatePath(`/foro/${forumData.slug}/post/${postId}`);
       revalidatePath("/admin/mis-postulaciones");
       revalidatePath("/admin/foro");
-      return { success: true };
+      return { success: true, application: { id: existing.id, status: "pending" } };
     }
     return { error: "Ya te postulaste a esta oferta." };
   }
 
-  const { error } = await admin.from("forum_applications").insert({
+  const { data: inserted, error } = await admin.from("forum_applications").insert({
     post_id: postId,
     user_id: caller.id,
     message,
-  });
+  }).select("id").single();
 
   if (error) return { error: error.message || "No se pudo enviar la postulacion." };
 
   revalidatePath(`/foro/${forumData.slug}/post/${postId}`);
   revalidatePath("/admin/mis-postulaciones");
   revalidatePath("/admin/foro");
-  return { success: true };
+  return { success: true, application: { id: inserted.id, status: "pending" } };
 }
 
 export async function cancelApplication(applicationId) {
@@ -573,7 +584,6 @@ export async function cancelApplication(applicationId) {
 
   if (!app) return { error: "Postulacion no encontrada." };
   if (app.user_id !== caller.id) return { error: "Sin permisos." };
-  if (!["pending", "reviewed"].includes(app.status)) return { error: "No se puede cancelar esta postulacion." };
 
   const { error } = await admin
     .from("forum_applications")

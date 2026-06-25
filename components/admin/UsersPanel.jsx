@@ -134,6 +134,8 @@ function UserCard({ user, categories = [], notify }) {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [categoryIds, setCategoryIds] = useState(user.categoryIds ?? []);
 
   const roleLabel = ROLE_ES[user.role] ?? user.role;
@@ -294,20 +296,40 @@ function UserCard({ user, categories = [], notify }) {
               <div className="pt-2 border-t border-gray-100 space-y-2">
                 <p className="text-xs font-bold text-gray-600 uppercase tracking-wide">Cambiar contraseña</p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  <input
-                    type="password"
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    placeholder="Nueva contraseña"
-                    className="rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-800 focus:border-[#872075] focus:outline-none focus:ring-2 focus:ring-[#872075]/20"
-                  />
-                  <input
-                    type="password"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder="Confirmar contraseña"
-                    className="rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-800 focus:border-[#872075] focus:outline-none focus:ring-2 focus:ring-[#872075]/20"
-                  />
+                  <div className="relative">
+                    <input
+                      type={showNewPassword ? "text" : "password"}
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      placeholder="Nueva contraseña"
+                      className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 pr-9 text-sm text-gray-800 focus:border-[#872075] focus:outline-none focus:ring-2 focus:ring-[#872075]/20"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowNewPassword((p) => !p)}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                      aria-label={showNewPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                    >
+                      <i className={`fa-solid ${showNewPassword ? "fa-eye-slash" : "fa-eye"} text-xs`} aria-hidden="true" />
+                    </button>
+                  </div>
+                  <div className="relative">
+                    <input
+                      type={showConfirmPassword ? "text" : "password"}
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      placeholder="Confirmar contraseña"
+                      className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 pr-9 text-sm text-gray-800 focus:border-[#872075] focus:outline-none focus:ring-2 focus:ring-[#872075]/20"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword((p) => !p)}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                      aria-label={showConfirmPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                    >
+                      <i className={`fa-solid ${showConfirmPassword ? "fa-eye-slash" : "fa-eye"} text-xs`} aria-hidden="true" />
+                    </button>
+                  </div>
                 </div>
                 <button
                   onClick={() => startTransition(async () => {

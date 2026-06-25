@@ -289,9 +289,13 @@ export default function ForoPanel({ profile, forums, posts, memberships, applica
               </div>
 
               {/* Tabs */}
-              <div className="border-b border-gray-100">
-                <div className="flex gap-1">
-                  {TABS.filter((t) => isAdmin || t.id !== "config").map((tab) => (
+              <div className="border-b border-gray-100 overflow-x-auto">
+                <div className="flex gap-1 min-w-max">
+                  {TABS.filter((t) => {
+                    if (!isAdmin && t.id === "config") return false;
+                    if (t.id === "postulaciones" && !selectedForum?.allow_applications) return false;
+                    return true;
+                  }).map((tab) => (
                     <button
                       key={tab.id}
                       onClick={() => {
@@ -338,7 +342,7 @@ export default function ForoPanel({ profile, forums, posts, memberships, applica
                 />
               )}
 
-              {activeTab === "postulaciones" && (
+              {activeTab === "postulaciones" && selectedForum?.allow_applications && (
                 <PostulacionesTab
                   forumSlug={selectedForum?.slug}
                   applications={forumApplications}
@@ -630,7 +634,7 @@ function MiembrosTab({ memberships, onApprove, onReject, onRemove }) {
             {pending.map((m) => (
               <div
                 key={m.id}
-                className="flex items-center justify-between gap-3 rounded-xl border border-amber-100 bg-white px-4 py-3"
+                className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 rounded-xl border border-amber-100 bg-white px-4 py-3"
               >
                 <div>
                   <p className="text-sm font-semibold text-gray-800">{getRelFirst(m.profiles)?.name}</p>
@@ -727,17 +731,33 @@ function PostulacionesTab({ forumSlug, applications, onUpdateStatus }) {
             key={app.id}
             className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm space-y-3"
           >
-            <div className="flex items-start justify-between gap-4">
-              <div className="space-y-1">
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+              <div className="space-y-1 flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#872075]/10 text-[#872075] text-xs font-bold">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#872075]/10 text-[#872075] text-xs font-bold shrink-0">
                     {(profile?.name || "A")[0].toUpperCase()}
                   </div>
-                  <div>
-                    <p className="text-sm font-semibold text-gray-800">{profile?.name || "Desconocido"}</p>
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-gray-800 truncate">{profile?.name || "Desconocido"}</p>
                     <p className="text-xs text-gray-500">Postulante</p>
                   </div>
                 </div>
+                {(profile?.phone_number || profile?.address) && (
+                  <div className="mt-2 rounded-xl bg-gray-50 border border-gray-100 px-3 py-2 space-y-1 text-xs">
+                    {profile?.phone_number && (
+                      <p className="text-gray-600 break-all">
+                        <i className="fa-solid fa-phone text-gray-400 mr-1" aria-hidden="true" />
+                        {profile.phone_number}
+                      </p>
+                    )}
+                    {profile?.address && (
+                      <p className="text-gray-600 break-all">
+                        <i className="fa-solid fa-location-dot text-gray-400 mr-1" aria-hidden="true" />
+                        {profile.address}
+                      </p>
+                    )}
+                  </div>
+                )}
                 <p className="text-sm text-gray-700">
                   <span className="font-semibold">Oferta:</span>{" "}
                   <Link
@@ -756,11 +776,11 @@ function PostulacionesTab({ forumSlug, applications, onUpdateStatus }) {
                 </p>
                 {app.message && (
                   <div className="mt-2 rounded-xl bg-gray-50 border border-gray-100 px-3 py-2">
-                    <p className="text-xs text-gray-600 whitespace-pre-wrap">{app.message}</p>
+                    <p className="text-xs text-gray-600 whitespace-pre-wrap break-words">{app.message}</p>
                   </div>
                 )}
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 sm:shrink-0">
                 <span
                   className={`text-xs font-bold px-2.5 py-1 rounded-full ${
                     app.status === "pending"

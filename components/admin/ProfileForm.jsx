@@ -7,6 +7,8 @@ import { updateUserProfile, updateUserPassword } from "@/app/admin/profile/actio
 export default function ProfileForm({ profile, user }) {
   const router = useRouter();
   const [name, setName] = useState(profile.name);
+  const [phoneNumber, setPhoneNumber] = useState(profile.phone_number || "");
+  const [address, setAddress] = useState(profile.address || "");
   const [avatarUrl, setAvatarUrl] = useState(profile.avatar_url || "");
   const [avatarFile, setAvatarFile] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -18,6 +20,9 @@ export default function ProfileForm({ profile, user }) {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -32,6 +37,8 @@ export default function ProfileForm({ profile, user }) {
     setLoading(true);
     const formData = new FormData();
     formData.append("name", name.trim());
+    formData.append("phone_number", phoneNumber.trim());
+    formData.append("address", address.trim());
     if (avatarFile) formData.append("avatar", avatarFile);
 
     const result = await updateUserProfile(formData);
@@ -139,6 +146,34 @@ export default function ProfileForm({ profile, user }) {
         </div>
 
         <div className="space-y-2">
+          <label htmlFor="phone" className="block text-sm font-semibold text-gray-700">
+            Teléfono
+          </label>
+          <input
+            id="phone"
+            type="tel"
+            value={phoneNumber}
+            onChange={(e) => setPhoneNumber(e.target.value)}
+            placeholder="+57 300 000 0000"
+            className="w-full rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-800 placeholder-gray-400 focus:border-[#872075] focus:ring-2 focus:ring-[#872075]/20 transition outline-none"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <label htmlFor="address" className="block text-sm font-semibold text-gray-700">
+            Dirección
+          </label>
+          <input
+            id="address"
+            type="text"
+            value={address}
+            onChange={(e) => setAddress(e.target.value)}
+            placeholder="Cra. 53BB #10B Sur - 51"
+            className="w-full rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-800 placeholder-gray-400 focus:border-[#872075] focus:ring-2 focus:ring-[#872075]/20 transition outline-none"
+          />
+        </div>
+
+        <div className="space-y-2">
           <label htmlFor="name" className="block text-sm font-semibold text-gray-700">
             Nombre
           </label>
@@ -214,42 +249,72 @@ export default function ProfileForm({ profile, user }) {
             <label htmlFor="currentPassword" className="block text-sm font-semibold text-gray-700">
               Contraseña actual
             </label>
-            <input
-              id="currentPassword"
-              type="password"
-              value={currentPassword}
-              onChange={(e) => setCurrentPassword(e.target.value)}
-              placeholder="••••••••"
-              className="w-full rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-800 placeholder-gray-400 focus:border-[#872075] focus:ring-2 focus:ring-[#872075]/20 transition outline-none"
-            />
+            <div className="relative">
+              <input
+                id="currentPassword"
+                type={showCurrentPassword ? "text" : "password"}
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+                placeholder="••••••••"
+                className="w-full rounded-lg border border-gray-200 bg-white px-4 py-2.5 pr-10 text-sm text-gray-800 placeholder-gray-400 focus:border-[#872075] focus:ring-2 focus:ring-[#872075]/20 transition outline-none"
+              />
+              <button
+                type="button"
+                onClick={() => setShowCurrentPassword((p) => !p)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                aria-label={showCurrentPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+              >
+                <i className={`fa-solid ${showCurrentPassword ? "fa-eye-slash" : "fa-eye"} text-sm`} aria-hidden="true" />
+              </button>
+            </div>
           </div>
 
           <div className="space-y-2">
             <label htmlFor="newPassword" className="block text-sm font-semibold text-gray-700">
               Contraseña nueva
             </label>
-            <input
-              id="newPassword"
-              type="password"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              placeholder="Mín. 8 caracteres"
-              className="w-full rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-800 placeholder-gray-400 focus:border-[#872075] focus:ring-2 focus:ring-[#872075]/20 transition outline-none"
-            />
+            <div className="relative">
+              <input
+                id="newPassword"
+                type={showNewPassword ? "text" : "password"}
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="Mín. 8 caracteres"
+                className="w-full rounded-lg border border-gray-200 bg-white px-4 py-2.5 pr-10 text-sm text-gray-800 placeholder-gray-400 focus:border-[#872075] focus:ring-2 focus:ring-[#872075]/20 transition outline-none"
+              />
+              <button
+                type="button"
+                onClick={() => setShowNewPassword((p) => !p)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                aria-label={showNewPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+              >
+                <i className={`fa-solid ${showNewPassword ? "fa-eye-slash" : "fa-eye"} text-sm`} aria-hidden="true" />
+              </button>
+            </div>
           </div>
 
           <div className="space-y-2">
             <label htmlFor="confirmPassword" className="block text-sm font-semibold text-gray-700">
               Confirmar contraseña
             </label>
-            <input
-              id="confirmPassword"
-              type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder="Repite tu contraseña"
-              className="w-full rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-800 placeholder-gray-400 focus:border-[#872075] focus:ring-2 focus:ring-[#872075]/20 transition outline-none"
-            />
+            <div className="relative">
+              <input
+                id="confirmPassword"
+                type={showConfirmPassword ? "text" : "password"}
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Repite tu contraseña"
+                className="w-full rounded-lg border border-gray-200 bg-white px-4 py-2.5 pr-10 text-sm text-gray-800 placeholder-gray-400 focus:border-[#872075] focus:ring-2 focus:ring-[#872075]/20 transition outline-none"
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword((p) => !p)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                aria-label={showConfirmPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+              >
+                <i className={`fa-solid ${showConfirmPassword ? "fa-eye-slash" : "fa-eye"} text-sm`} aria-hidden="true" />
+              </button>
+            </div>
           </div>
 
           {passwordError && (
